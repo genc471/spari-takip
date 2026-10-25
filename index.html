@@ -4,6 +4,19 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="robots" content="noindex" />
+<meta name="theme-color" content="#0f766e" />
+<meta name="description" content="Siparişinizi adım adım takip edin, konumunuzu tek dokunuşla iletin." />
+<!-- WhatsApp / bağlantı önizleme kartı -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Sipariş Takip" />
+<meta property="og:locale" content="tr_TR" />
+<meta property="og:title" content="Halınız nerede? 📍" />
+<meta property="og:description" content="Siparişinizi adım adım takip edin, konumunuzu tek dokunuşla iletin." />
+<meta property="og:image" content="https://genc471.github.io/spari-takip/kapak.png" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
 <title>Halınız Nerede? · Sipariş Takip</title>
 <style>
   :root {
@@ -31,6 +44,10 @@
     text-align: center;
     color: #fff;
   }
+  .logo { width: 76px; height: 76px; border-radius: 22px; background: #fff; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22); }
+  .logo[hidden] { display: none; }
+  .logo img { width: 100%; height: 100%; object-fit: cover; }
+  .logo .ini { font-size: 28px; font-weight: 900; color: var(--primary); letter-spacing: 0.5px; }
   .hero .brand { font-size: 13px; font-weight: 800; opacity: 0.85; letter-spacing: 1px; text-transform: uppercase; }
   .hero .title { font-size: 23px; font-weight: 900; margin-top: 6px; }
   .wrap { max-width: 480px; margin: -30px auto 0; padding: 0 14px 40px; }
@@ -74,6 +91,7 @@
 </head>
 <body>
   <div class="hero">
+    <div class="logo" id="logo" hidden></div>
     <div class="brand" id="brand">Sipariş Takip</div>
     <div class="title">Halınız Nerede?</div>
   </div>
@@ -135,6 +153,23 @@
   var orderId = new URLSearchParams(window.location.search).get("id");
   var wantsLocation = new URLSearchParams(window.location.search).get("konum") === "1";
 
+  // Firma logosu; yoksa ya da açılamazsa firma adının baş harfleri. Yalnız https adresi kabul edilir.
+  function showLogo(url, name) {
+    var box = document.getElementById("logo");
+    function initials() {
+      var ini = String(name || "").trim().split(/\s+/).slice(0, 2).map(function (w) { return w.charAt(0); }).join("").toLocaleUpperCase("tr-TR");
+      if (!ini) { box.hidden = true; return; }
+      box.innerHTML = '<span class="ini">' + esc(ini) + '</span>';
+      box.hidden = false;
+    }
+    if (!url || !/^https:\/\//.test(url)) { initials(); return; }
+    var img = new Image();
+    img.alt = name || "Logo";
+    img.onload = function () { box.innerHTML = ""; box.appendChild(img); box.hidden = false; };
+    img.onerror = initials;
+    img.src = url;
+  }
+
   function render(data) {
     var card = document.getElementById("card");
     if (!data || !data.bulundu) {
@@ -142,6 +177,7 @@
       return;
     }
     if (data.firma_adi) document.getElementById("brand").textContent = data.firma_adi;
+    showLogo(data.firma_logo, data.firma_adi);
     var idx = STEPS.findIndex(function (s) { return s.key === data.durum; });
     var stepsHtml = STEPS.map(function (s, i) {
       var cls = i < idx ? "done" : i === idx ? "current" : "";
@@ -209,15 +245,25 @@
     }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
   }
 
-  if (!orderId) {
-    render(null);
-  } else {
+  // Sipariş az önce oluşturulduysa (mesaj hemen gider) sunucuya ulaşması birkaç saniye sürebilir:
+  // bulunamazsa birkaç kez daha sorulur.
+  function load(attempt) {
     rpc("track_order", { order_id: orderId })
-      .then(render)
+      .then(function (data) {
+        if ((!data || !data.bulundu) && attempt < 3) {
+          document.getElementById("card").innerHTML = '<div class="state"><div class="spinner"></div>Sipariş bilgisi bekleniyor…</div>';
+          setTimeout(function () { load(attempt + 1); }, 4000);
+          return;
+        }
+        render(data);
+      })
       .catch(function () {
         document.getElementById("card").innerHTML = '<div class="state">Bağlantı hatası. İnternetinizi kontrol edip tekrar deneyin.</div>';
       });
   }
+
+  if (!orderId) render(null);
+  else load(0);
 </script>
 </body>
 </html>
