@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Sipariş Takip</title>
+<meta name="robots" content="noindex" />
+<title>Halınız Nerede? · Sipariş Takip</title>
 <style>
   :root {
     --ink: #102026;
@@ -13,7 +14,8 @@
     --primary-pale: #ccfbf1;
     --slate: #64748b;
     --border: #e2e8f0;
-    --surface: #f8f9fa;
+    --surface: #f4f6f8;
+    --green: #16a34a;
   }
   * { box-sizing: border-box; }
   body {
@@ -22,74 +24,65 @@
     background: var(--surface);
     color: var(--ink);
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
   }
   .hero {
-    width: 100%;
-    background: linear-gradient(135deg, var(--ink-soft), var(--ink));
-    padding: 28px 20px 22px;
+    background: linear-gradient(135deg, var(--ink-soft), var(--primary));
+    padding: 26px 20px 46px;
     text-align: center;
     color: #fff;
   }
-  .hero .brand { font-size: 15px; font-weight: 700; opacity: 0.85; letter-spacing: 0.3px; }
-  .hero .title { font-size: 21px; font-weight: 900; margin-top: 4px; }
-  .wrap { width: 100%; max-width: 460px; padding: 18px 16px 40px; }
+  .hero .brand { font-size: 13px; font-weight: 800; opacity: 0.85; letter-spacing: 1px; text-transform: uppercase; }
+  .hero .title { font-size: 23px; font-weight: 900; margin-top: 6px; }
+  .wrap { max-width: 480px; margin: -30px auto 0; padding: 0 14px 40px; }
   .card {
-    background: #fff;
-    border-radius: 18px;
-    border: 1px solid var(--border);
-    padding: 20px;
-    box-shadow: 0 4px 14px rgba(16, 32, 38, 0.06);
+    background: #fff; border-radius: 20px; border: 1px solid var(--border);
+    padding: 20px; box-shadow: 0 8px 24px rgba(16, 32, 38, 0.08); margin-bottom: 12px;
   }
-  .state { text-align: center; padding: 30px 10px; color: var(--slate); font-size: 14.5px; }
-  .spinner {
-    width: 34px; height: 34px; border-radius: 50%;
-    border: 3px solid var(--primary-pale); border-top-color: var(--primary);
-    margin: 0 auto 14px; animation: spin 0.8s linear infinite;
-  }
+  .state { text-align: center; padding: 26px 8px; color: var(--slate); font-size: 15px; line-height: 1.5; }
+  .spinner { width: 34px; height: 34px; border-radius: 50%; border: 3px solid var(--primary-pale); border-top-color: var(--primary); margin: 0 auto 14px; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .company { font-size: 13px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
-  .status-badge {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: var(--primary-pale); color: var(--primary);
-    font-weight: 900; font-size: 17px;
-    padding: 10px 18px; border-radius: 14px; margin-bottom: 18px;
-  }
+  .status-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--primary-pale); color: var(--primary); font-weight: 900; font-size: 18px; padding: 10px 18px; border-radius: 14px; }
+  .status-line { font-size: 14px; color: var(--slate); margin: 10px 0 18px; line-height: 1.45; }
   .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--primary); }
-  .timeline { display: flex; align-items: center; margin-bottom: 20px; }
+  .timeline { display: flex; align-items: flex-start; margin: 4px 0 18px; }
   .step { flex: 1; display: flex; flex-direction: column; align-items: center; position: relative; }
-  .step .circle {
-    width: 22px; height: 22px; border-radius: 50%;
-    background: var(--border); border: 2px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; color: #fff; font-weight: 900; z-index: 1;
-  }
+  .step .circle { width: 26px; height: 26px; border-radius: 50%; background: #fff; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; font-weight: 900; z-index: 1; }
   .step.done .circle { background: var(--primary); border-color: var(--primary); }
-  .step.current .circle { background: var(--primary-bright); border-color: var(--primary-bright); box-shadow: 0 0 0 4px var(--primary-pale); }
-  .step .line { position: absolute; top: 10px; left: -50%; width: 100%; height: 2px; background: var(--border); z-index: 0; }
+  .step.current .circle { background: var(--primary-bright); border-color: var(--primary-bright); box-shadow: 0 0 0 5px var(--primary-pale); }
+  .step .line { position: absolute; top: 12px; left: -50%; width: 100%; height: 3px; background: var(--border); z-index: 0; }
   .step:first-child .line { display: none; }
   .step.done .line, .step.current .line { background: var(--primary); }
-  .step .label { font-size: 9.5px; color: var(--slate); font-weight: 700; margin-top: 5px; text-align: center; line-height: 1.2; }
+  .step .label { font-size: 10.5px; color: var(--slate); font-weight: 700; margin-top: 6px; text-align: center; line-height: 1.2; }
   .step.done .label, .step.current .label { color: var(--ink); }
-  .row { display: flex; justify-content: space-between; padding: 10px 0; border-top: 1px solid var(--border); font-size: 13.5px; }
+  .row { display: flex; justify-content: space-between; gap: 12px; padding: 11px 0; border-top: 1px solid var(--border); font-size: 14px; }
   .row:first-of-type { border-top: none; }
   .row .k { color: var(--slate); font-weight: 600; }
-  .row .v { color: var(--ink); font-weight: 800; text-align: right; max-width: 60%; }
-  .foot { text-align: center; margin-top: 18px; font-size: 12px; color: var(--slate); }
+  .row .v { color: var(--ink); font-weight: 800; text-align: right; }
+  .btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; border: none; border-radius: 14px; padding: 15px; font-size: 16px; font-weight: 900; cursor: pointer; text-decoration: none; }
+  .btn-loc { background: var(--primary); color: #fff; }
+  .btn-loc[disabled] { opacity: 0.6; }
+  .btn-row { display: flex; gap: 10px; margin-top: 10px; }
+  .btn-row .btn { flex: 1; font-size: 15px; padding: 13px; }
+  .btn-call { background: #e6f5f2; color: var(--primary); }
+  .btn-wa { background: #25d366; color: #fff; }
+  .loc-title { font-size: 16px; font-weight: 900; margin: 0 0 4px; }
+  .loc-text { font-size: 13.5px; color: var(--slate); margin: 0 0 14px; line-height: 1.45; }
+  .ok { background: #f0fdf4; border: 1px solid #bbf7d0; color: var(--green); border-radius: 14px; padding: 13px; font-weight: 800; font-size: 14.5px; text-align: center; }
+  .err { color: #b91c1c; font-size: 13px; margin-top: 10px; text-align: center; }
+  .foot { text-align: center; margin-top: 16px; font-size: 12px; color: var(--slate); }
 </style>
 </head>
 <body>
   <div class="hero">
-    <div class="brand">SİPARİŞ TAKİP</div>
+    <div class="brand" id="brand">Sipariş Takip</div>
     <div class="title">Halınız Nerede?</div>
   </div>
   <div class="wrap">
     <div class="card" id="card">
       <div class="state"><div class="spinner"></div>Sorgulanıyor…</div>
     </div>
-    <div class="foot">Bu link sadece bu siparişin durumunu gösterir.</div>
+    <div class="card" id="loccard" style="display:none"></div>
+    <div class="foot">Bu bağlantı yalnızca bu siparişin durumunu gösterir.</div>
   </div>
 
 <script>
@@ -97,61 +90,129 @@
   var SUPABASE_ANON_KEY = "sb_publishable_ZTqkY2ZJPKqtJo5eNycwAA_owbOKT52";
 
   var STEPS = [
-    { key: "Teslim alınacak", label: "Alınacak", short: "A" },
-    { key: "Yıkamada", label: "Yıkamada", short: "Y" },
-    { key: "Hazır", label: "Hazır", short: "H" },
-    { key: "Teslim edilecek", label: "Teslimde", short: "T" },
-    { key: "Araçta", label: "Araçta", short: "A" },
+    { key: "Teslim alınacak", label: "Alınacak", short: "1" },
+    { key: "Yıkamada", label: "Yıkanıyor", short: "2" },
+    { key: "Hazır", label: "Hazır", short: "3" },
+    { key: "Teslim edilecek", label: "Teslimatta", short: "4" },
+    { key: "Araçta", label: "Yolda", short: "5" },
     { key: "Teslim edildi", label: "Teslim Edildi", short: "✓" },
   ];
+  // Müşteriye her aşamada ne olduğu sade dille
+  var LINES = {
+    "Teslim alınacak": "Halılarınızı belirtilen gün adresinizden alacağız.",
+    "Yıkamada": "Halılarınız tesisimizde yıkanıyor ve kurutuluyor.",
+    "Hazır": "Halılarınız hazır, paketlendi. Teslimat için sizi arayacağız.",
+    "Teslim edilecek": "Halılarınız teslimat listesinde. Teslim günü sizi arayacağız.",
+    "Araçta": "Halılarınız araçta, adresinize doğru yoldayız.",
+    "Teslim edildi": "Halılarınız teslim edildi. Bizi tercih ettiğiniz için teşekkürler!"
+  };
+
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 
   function fmtDate(s) {
     if (!s) return "—";
     var p = String(s).split("-");
     if (p.length !== 3) return s;
-    var months = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
+    var months = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
     return Number(p[2]) + " " + (months[Number(p[1]) - 1] || "") + " " + p[0];
   }
+
+  function phoneDigits(p) {
+    var d = String(p || "").replace(/\D/g, "");
+    if (d.indexOf("0") === 0) d = "90" + d.slice(1);
+    else if (d.length === 10) d = "90" + d;
+    return d;
+  }
+
+  function rpc(name, body) {
+    return fetch(SUPABASE_URL + "/rest/v1/rpc/" + name, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY },
+      body: JSON.stringify(body),
+    }).then(function (r) { return r.json(); });
+  }
+
+  var orderId = new URLSearchParams(window.location.search).get("id");
+  var wantsLocation = new URLSearchParams(window.location.search).get("konum") === "1";
 
   function render(data) {
     var card = document.getElementById("card");
     if (!data || !data.bulundu) {
-      card.innerHTML = '<div class="state">😕 Sipariş bulunamadı.<br/>Link geçersiz olabilir, firmanızla iletişime geçin.</div>';
+      card.innerHTML = '<div class="state">😕 Sipariş bulunamadı.<br/>Bağlantı eski olabilir; lütfen firmanızla iletişime geçin.</div>';
       return;
     }
+    if (data.firma_adi) document.getElementById("brand").textContent = data.firma_adi;
     var idx = STEPS.findIndex(function (s) { return s.key === data.durum; });
     var stepsHtml = STEPS.map(function (s, i) {
       var cls = i < idx ? "done" : i === idx ? "current" : "";
-      return '<div class="step ' + cls + '"><div class="line"></div><div class="circle">' +
-        (i < idx ? "✓" : s.short) + '</div><div class="label">' + s.label + '</div></div>';
+      return '<div class="step ' + cls + '"><div class="line"></div><div class="circle">' + (i < idx ? "✓" : s.short) + '</div><div class="label">' + s.label + '</div></div>';
     }).join("");
 
     var rows = "";
-    if (data.alis_tarihi) rows += '<div class="row"><div class="k">Alış Tarihi</div><div class="v">' + fmtDate(data.alis_tarihi) + '</div></div>';
-    if (data.teslim_tarihi) rows += '<div class="row"><div class="k">Teslim Tarihi</div><div class="v">' + fmtDate(data.teslim_tarihi) + '</div></div>';
-    if (data.urun_ozet) rows += '<div class="row"><div class="k">Ürünler</div><div class="v">' + data.urun_ozet + '</div></div>';
+    if (data.alis_tarihi) rows += '<div class="row"><div class="k">Alış</div><div class="v">' + fmtDate(data.alis_tarihi) + '</div></div>';
+    if (data.teslim_tarihi && data.durum !== "Teslim edildi") rows += '<div class="row"><div class="k">Tahmini teslim</div><div class="v">' + fmtDate(data.teslim_tarihi) + '</div></div>';
+    if (data.parca) rows += '<div class="row"><div class="k">Parça</div><div class="v">' + esc(data.parca) + ' adet</div></div>';
+    if (data.urun_ozet) rows += '<div class="row"><div class="k">Ürünler</div><div class="v">' + esc(data.urun_ozet) + '</div></div>';
+
+    var contact = "";
+    if (data.firma_tel) {
+      contact = '<div class="btn-row">' +
+        '<a class="btn btn-call" href="tel:' + esc(String(data.firma_tel).replace(/\s/g, "")) + '">📞 Ara</a>' +
+        '<a class="btn btn-wa" href="https://wa.me/' + phoneDigits(data.firma_tel) + '">WhatsApp</a>' +
+        '</div>';
+    }
 
     card.innerHTML =
-      (data.firma_adi ? '<div class="company">' + data.firma_adi + '</div>' : '') +
-      '<div class="status-badge"><span class="dot"></span>' + (data.durum || "—") + '</div>' +
+      '<div class="status-badge"><span class="dot"></span>' + esc(data.durum || "—") + '</div>' +
+      '<div class="status-line">' + esc(LINES[data.durum] || "") + '</div>' +
       '<div class="timeline">' + stepsHtml + '</div>' +
-      rows;
+      rows + contact;
+
+    // Konum paylaşımı: teslim edilmemiş siparişte göster (firma istediyse en üstte vurgulu)
+    if (data.durum !== "Teslim edildi") renderLocation(data, wantsLocation);
   }
 
-  var id = new URLSearchParams(window.location.search).get("id");
-  if (!id) {
+  function renderLocation(data, highlight) {
+    var box = document.getElementById("loccard");
+    box.style.display = "block";
+    if (highlight) box.style.border = "2px solid #14b8a6";
+    box.innerHTML =
+      '<p class="loc-title">📍 Adresinizi kolay bulalım</p>' +
+      '<p class="loc-text">Halıların alınacağı / teslim edileceği adresteyken aşağıdaki düğmeye basın; konumunuz yalnızca bu firmaya iletilir.</p>' +
+      '<button class="btn btn-loc" id="locbtn">📍 Konumumu Gönder</button><div id="locmsg"></div>';
+    document.getElementById("locbtn").onclick = sendLocation;
+  }
+
+  function sendLocation() {
+    var btn = document.getElementById("locbtn");
+    var msg = document.getElementById("locmsg");
+    msg.innerHTML = "";
+    if (!navigator.geolocation) { msg.innerHTML = '<div class="err">Bu tarayıcı konum paylaşamıyor.</div>'; return; }
+    btn.disabled = true; btn.textContent = "Konum alınıyor…";
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      rpc("share_order_location", { p_order_id: orderId, p_lat: pos.coords.latitude, p_lng: pos.coords.longitude, p_acc: pos.coords.accuracy || null })
+        .then(function (r) {
+          if (r && r.ok) {
+            document.getElementById("loccard").innerHTML = '<div class="ok">✓ Konumunuz iletildi. Teşekkür ederiz!</div>';
+          } else {
+            btn.disabled = false; btn.textContent = "📍 Konumumu Gönder";
+            msg.innerHTML = '<div class="err">Konum kaydedilemedi. Lütfen firmayı arayın.</div>';
+          }
+        })
+        .catch(function () {
+          btn.disabled = false; btn.textContent = "📍 Konumumu Gönder";
+          msg.innerHTML = '<div class="err">Bağlantı hatası, tekrar deneyin.</div>';
+        });
+    }, function (err) {
+      btn.disabled = false; btn.textContent = "📍 Konumumu Gönder";
+      msg.innerHTML = '<div class="err">' + (err && err.code === 1 ? "Konum izni verilmedi. Tarayıcı ayarlarından konuma izin verip tekrar deneyin." : "Konum alınamadı, tekrar deneyin.") + '</div>';
+    }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+  }
+
+  if (!orderId) {
     render(null);
   } else {
-    fetch(SUPABASE_URL + "/rest/v1/rpc/track_order", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "apikey": SUPABASE_ANON_KEY,
-        "Authorization": "Bearer " + SUPABASE_ANON_KEY,
-      },
-      body: JSON.stringify({ order_id: id }),
-    })
-      .then(function (r) { return r.json(); })
+    rpc("track_order", { order_id: orderId })
       .then(render)
       .catch(function () {
         document.getElementById("card").innerHTML = '<div class="state">Bağlantı hatası. İnternetinizi kontrol edip tekrar deneyin.</div>';
