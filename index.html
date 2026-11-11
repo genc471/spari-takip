@@ -4,6 +4,8 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="robots" content="noindex" />
+<!-- v7 (2026-11-10): müşteri yanıtı kartı + puandan sonra "Google'da yorum yaz" + havale/EFT hesabı (firma ayarıyla). Uygulama bu işaretle sayfanın yanıtı desteklediğini anlar (store/order-replies) -->
+<meta name="takip-yanit" content="1" />
 <meta name="theme-color" content="#0f766e" />
 <meta name="description" content="Siparişinizi adım adım takip edin, konumunuzu tek dokunuşla iletin." />
 <!-- WhatsApp / bağlantı önizleme kartı -->
@@ -18,102 +20,153 @@
 <meta property="og:image:height" content="630" />
 <meta name="twitter:card" content="summary_large_image" />
 <title>Halınız Nerede? · Sipariş Takip</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&family=Barlow+Semi+Condensed:wght@600;700&display=swap" />
 <style>
+  /* "Hat ve Durak": siparişin yolculuğu dikey bir hat, her aşama kendi renginde bir durak (uygulamayla aynı dil) */
   :root {
     --ink: #102026;
-    --ink-soft: #17313a;
-    --primary: #0f766e;
-    --primary-bright: #14b8a6;
-    --primary-pale: #ccfbf1;
-    --slate: #64748b;
-    --border: #e2e8f0;
-    --surface: #f4f6f8;
-    --green: #16a34a;
+    --sub: #5b6b70;
+    --faint: #8a9a9f;
+    --line: #e1e8e7;
+    --ground: #f1f5f4;
+    --card: #ffffff;
+    --teal: #0f766e;
+    --teal-pale: #ccfbf1;
+    --board: #14303a;
+    --title: "Barlow Semi Condensed", "Arial Narrow", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    --num: "Barlow Condensed", "Arial Narrow", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    --body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
   }
   * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    background: var(--surface);
-    color: var(--ink);
-    min-height: 100vh;
-  }
-  .hero {
-    background: linear-gradient(135deg, var(--ink-soft), var(--primary));
-    padding: 26px 20px 46px;
-    text-align: center;
-    color: #fff;
-  }
-  .logo { width: 76px; height: 76px; border-radius: 22px; background: #fff; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22); }
-  .logo[hidden] { display: none; }
+  html { background: var(--ground); }
+  body { margin: 0; font-family: var(--body); background: var(--ground); color: var(--ink); min-height: 100vh; }
+  [hidden] { display: none !important; }
+
+  .hero { background: linear-gradient(160deg, var(--board), var(--teal)); color: #fff; text-align: center;
+    padding: calc(24px + env(safe-area-inset-top, 0px)) max(20px, env(safe-area-inset-right, 0px)) 48px max(20px, env(safe-area-inset-left, 0px)); }
+  .logo { width: 72px; height: 72px; border-radius: 20px; background: #fff; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22); }
   .logo img { width: 100%; height: 100%; object-fit: cover; }
-  .logo .ini { font-size: 28px; font-weight: 900; color: var(--primary); letter-spacing: 0.5px; }
-  .hero .brand { font-size: 13px; font-weight: 800; opacity: 0.85; letter-spacing: 1px; text-transform: uppercase; }
-  .hero .title { font-size: 23px; font-weight: 900; margin-top: 6px; }
-  .wrap { max-width: 480px; margin: -30px auto 0; padding: 0 14px 40px; }
-  .card {
-    background: #fff; border-radius: 20px; border: 1px solid var(--border);
-    padding: 20px; box-shadow: 0 8px 24px rgba(16, 32, 38, 0.08); margin-bottom: 12px;
-  }
-  .state { text-align: center; padding: 26px 8px; color: var(--slate); font-size: 15px; line-height: 1.5; }
-  .spinner { width: 34px; height: 34px; border-radius: 50%; border: 3px solid var(--primary-pale); border-top-color: var(--primary); margin: 0 auto 14px; animation: spin 0.8s linear infinite; }
+  .logo .ini { font-family: var(--title); font-size: 28px; font-weight: 700; color: var(--teal); }
+  .brand { font-size: 12.5px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; opacity: 0.85; }
+  .title { font-family: var(--title); font-weight: 700; font-size: 30px; line-height: 1.1; margin: 6px 0 0; text-wrap: balance; }
+
+  .wrap { max-width: 480px; margin: -30px auto 0; padding: 0 max(14px, env(safe-area-inset-right, 0px)) calc(40px + env(safe-area-inset-bottom, 0px)) max(14px, env(safe-area-inset-left, 0px)); }
+  .card { background: var(--card); border-radius: 18px; border: 1px solid var(--line); padding: 18px; box-shadow: 0 8px 24px rgba(16, 32, 38, 0.07); margin-bottom: 12px; }
+
+  .state { text-align: center; padding: 26px 8px; color: var(--sub); font-size: 15px; line-height: 1.5; }
+  .state b { display: block; color: var(--ink); font-size: 17px; margin-bottom: 4px; }
+  .spinner { width: 32px; height: 32px; border-radius: 50%; border: 3px solid var(--teal-pale); border-top-color: var(--teal); margin: 0 auto 14px; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .status-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--primary-pale); color: var(--primary); font-weight: 900; font-size: 18px; padding: 10px 18px; border-radius: 14px; }
-  .status-line { font-size: 14px; color: var(--slate); margin: 10px 0 18px; line-height: 1.45; }
-  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--primary); }
-  .timeline { display: flex; align-items: flex-start; margin: 4px 0 18px; }
-  .step { flex: 1; display: flex; flex-direction: column; align-items: center; position: relative; }
-  .step .circle { width: 26px; height: 26px; border-radius: 50%; background: #fff; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; font-weight: 900; z-index: 1; }
-  .step.done .circle { background: var(--primary); border-color: var(--primary); }
-  .step.current .circle { background: var(--primary-bright); border-color: var(--primary-bright); box-shadow: 0 0 0 5px var(--primary-pale); }
-  .step .line { position: absolute; top: 12px; left: -50%; width: 100%; height: 3px; background: var(--border); z-index: 0; }
-  .step:first-child .line { display: none; }
-  .step.done .line, .step.current .line { background: var(--primary); }
-  .step .label { font-size: 10.5px; color: var(--slate); font-weight: 700; margin-top: 6px; text-align: center; line-height: 1.2; }
-  .step.done .label, .step.current .label { color: var(--ink); }
-  .row { display: flex; justify-content: space-between; gap: 12px; padding: 11px 0; border-top: 1px solid var(--border); font-size: 14px; }
-  .row:first-of-type { border-top: none; }
-  .row .k { color: var(--slate); font-weight: 600; }
-  .row .v { color: var(--ink); font-weight: 800; text-align: right; }
-  .btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; border: none; border-radius: 14px; padding: 15px; font-size: 16px; font-weight: 900; cursor: pointer; text-decoration: none; }
-  .btn-loc { background: var(--primary); color: #fff; }
-  .btn-loc[disabled] { opacity: 0.6; }
-  .btn-row { display: flex; gap: 10px; margin-top: 10px; }
+  @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2.4s; } }
+
+  .cap { font-size: 11px; font-weight: 800; letter-spacing: 1.6px; color: var(--sub); margin: 0 0 12px; }
+
+  /* Hat: duraklar dikey çizgiyle bağlı; geçilen yol aşamanın renginde */
+  .hat { list-style: none; margin: 0 0 6px; padding: 0; }
+  .stop { position: relative; display: flex; gap: 14px; padding-bottom: 16px; }
+  .stop:last-child { padding-bottom: 2px; }
+  .stop::before { content: ""; position: absolute; left: 12px; top: 26px; bottom: -2px; width: 3px; background: var(--line); border-radius: 2px; }
+  .stop:last-child::before { display: none; }
+  .stop.done::before { background: var(--c); }
+  .mark { flex: none; width: 27px; height: 27px; border-radius: 50%; border: 2.5px solid var(--line); background: #fff; display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; }
+  .stop.done .mark { background: var(--c); border-color: var(--c); }
+  .stop.done .mark svg { width: 14px; height: 14px; }
+  .stop.now .mark { border-color: var(--c); box-shadow: 0 0 0 5px color-mix(in srgb, var(--c) 18%, transparent); }
+  .stop.now .mark::after { content: ""; width: 11px; height: 11px; border-radius: 50%; background: var(--c); }
+  .txt { flex: 1; min-width: 0; padding-top: 3px; }
+  .lbl { font-size: 15px; font-weight: 600; color: var(--faint); }
+  .stop.done .lbl { color: var(--ink); }
+  .stop.now .lbl { font-family: var(--title); font-weight: 700; font-size: 23px; line-height: 1.1; color: var(--c); }
+  .note { font-size: 14px; color: var(--sub); line-height: 1.45; margin-top: 4px; }
+  .stop.now .note { color: var(--ink); }
+  .when { font-size: 13px; color: var(--sub); margin-top: 2px; }
+  .stop.now .when { font-weight: 700; color: var(--ink); margin-top: 6px; }
+  .here { display: inline-block; margin-left: 6px; vertical-align: 3px; font-family: var(--body); font-size: 10px; font-weight: 800; letter-spacing: 1px; color: #fff; background: var(--c); padding: 2px 7px; border-radius: 6px; }
+
+  .rows { border-top: 1px solid var(--line); margin-top: 8px; }
+  .row { display: flex; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+  .row:last-child { border-bottom: none; }
+  .row .k { color: var(--sub); }
+  .row .v { color: var(--ink); font-weight: 700; text-align: right; }
+  .row .v.num { font-family: var(--num); font-weight: 700; font-size: 18px; line-height: 1.1; }
+
+  .btn { display: flex; align-items: center; justify-content: center; gap: 9px; width: 100%; border: none; border-radius: 13px; padding: 14px; font: 800 16px var(--body); cursor: pointer; text-decoration: none; }
+  .btn svg { width: 18px; height: 18px; flex: none; }
+  .btn:focus-visible { outline: 3px solid var(--teal-pale); outline-offset: 2px; }
+  .btn-row { display: flex; gap: 10px; margin-top: 14px; }
   .btn-row .btn { flex: 1; font-size: 15px; padding: 13px; }
-  .btn-call { background: #e6f5f2; color: var(--primary); }
-  .btn-wa { background: #25d366; color: #fff; }
-  .loc-title { font-size: 16px; font-weight: 900; margin: 0 0 4px; }
-  .loc-text { font-size: 13.5px; color: var(--slate); margin: 0 0 14px; line-height: 1.45; }
-  .ok { background: #f0fdf4; border: 1px solid #bbf7d0; color: var(--green); border-radius: 14px; padding: 13px; font-weight: 800; font-size: 14.5px; text-align: center; }
+  .btn-call { background: #fff; color: var(--teal); border: 1.5px solid var(--teal); }
+  .btn-wa { background: #1fa855; color: #fff; }
+  .btn-loc { background: var(--teal); color: #fff; }
+  .btn-loc[disabled] { opacity: 0.6; }
+  .loc-title { font-family: var(--title); font-weight: 700; font-size: 20px; margin: 0 0 4px; }
+  .loc-text { font-size: 14px; color: var(--sub); margin: 0 0 14px; line-height: 1.45; }
+  .loccard.hl { border: 2px solid var(--teal); }
+  .ok { background: #ecf7f5; border: 1px solid #cfe7e2; color: var(--teal); border-radius: 13px; padding: 13px; font-weight: 800; font-size: 14.5px; text-align: center; }
   .err { color: #b91c1c; font-size: 13px; margin-top: 10px; text-align: center; }
-  .foot { text-align: center; margin-top: 16px; font-size: 12px; color: var(--slate); }
+  .foot { text-align: center; margin-top: 16px; font-size: 12px; color: var(--sub); }
+
+  /* Müşteri yanıtı (v7): alış / teslim günü evde olacak mı */
+  .replycard.hl { border: 2px solid var(--teal); }
+  .btn-no { background: #fff; color: #b91c1c; border: 1.5px solid #fecaca; }
+  .btn-row.ask { margin-top: 0; }
+  .ok.no { background: #fff7ed; border-color: #fed7aa; color: #9a3412; }
+
+  /* Puan (teslim edilen siparişte): 5 yıldız + isteğe bağlı yorum */
+  .ratecard.hl { border: 2px solid #f59e0b; }
+  .stars { display: flex; justify-content: center; gap: 6px; margin: 4px 0 6px; }
+  .star { width: 50px; height: 50px; border: none; background: none; padding: 4px; cursor: pointer; color: #d6dfdd; -webkit-tap-highlight-color: transparent; }
+  .star svg { width: 100%; height: 100%; fill: currentColor; display: block; }
+  .star.on { color: #f59e0b; }
+  .star:focus-visible { outline: 3px solid #fde68a; outline-offset: 1px; border-radius: 10px; }
+  .stars.static .star { width: 34px; height: 34px; padding: 2px; cursor: default; }
+  .stxt { text-align: center; font-family: var(--title); font-weight: 700; font-size: 17px; color: var(--ink); min-height: 22px; margin-bottom: 10px; }
+  .rnote { width: 100%; min-height: 72px; border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 12px; font: 15px var(--body); color: var(--ink); resize: vertical; margin-bottom: 12px; }
+  .rnote:focus { outline: none; border-color: var(--teal); }
+  .quote { text-align: center; font-size: 14.5px; color: var(--sub); margin: 6px 0 12px; line-height: 1.45; }
+  /* Google yorumu: puan verildikten sonra, kaç yıldız verilirse verilsin aynı düğme */
+  .gask { text-align: center; font-size: 14.5px; color: var(--ink); margin: 4px 0 12px; line-height: 1.45; }
+  .ghint { text-align: center; font-size: 12.5px; color: var(--sub); margin: 8px 0 0; line-height: 1.4; }
+  .rate-more { margin-top: 10px; }
+  /* Havale / EFT: ödenmemiş siparişte firma hesabı (firma ayarı açıksa). Tutar yazılmaz. */
+  .acct { border-top: 1px solid var(--line); padding: 13px 0 2px; }
+  .acct:first-of-type { border-top: none; padding-top: 0; }
+  .acct .bn { font-weight: 800; font-size: 15px; color: var(--ink); }
+  .acct .hd { font-size: 13.5px; color: var(--sub); margin-top: 1px; }
+  .acct .ib { font: 700 16px ui-monospace, "SF Mono", Menlo, Consolas, monospace; color: var(--ink); letter-spacing: 0.3px; margin: 8px 0 11px; word-break: break-all; }
 </style>
 </head>
 <body>
-  <div class="hero">
+  <header class="hero">
     <div class="logo" id="logo" hidden></div>
     <div class="brand" id="brand">Sipariş Takip</div>
-    <div class="title">Halınız Nerede?</div>
-  </div>
-  <div class="wrap">
-    <div class="card" id="card">
+    <h1 class="title">Halınız nerede?</h1>
+  </header>
+  <main class="wrap">
+    <section class="card" id="card" aria-live="polite">
       <div class="state"><div class="spinner"></div>Sorgulanıyor…</div>
-    </div>
-    <div class="card" id="loccard" style="display:none"></div>
-    <div class="foot">Bu bağlantı yalnızca bu siparişin durumunu gösterir.</div>
-  </div>
+    </section>
+    <section class="card replycard" id="replycard" hidden aria-live="polite"></section>
+    <section class="card loccard" id="loccard" hidden></section>
+    <section class="card paycard" id="paycard" hidden></section>
+    <section class="card ratecard" id="ratecard" hidden></section>
+    <p class="foot">Bu bağlantı yalnızca bu siparişin durumunu gösterir.</p>
+  </main>
 
 <script>
   var SUPABASE_URL = "https://hxldnojokckqgxecyxhc.supabase.co";
   var SUPABASE_ANON_KEY = "sb_publishable_ZTqkY2ZJPKqtJo5eNycwAA_owbOKT52";
 
-  var STEPS = [
-    { key: "Teslim alınacak", label: "Alınacak", short: "1" },
-    { key: "Yıkamada", label: "Yıkanıyor", short: "2" },
-    { key: "Hazır", label: "Hazır", short: "3" },
-    { key: "Teslim edilecek", label: "Teslimatta", short: "4" },
-    { key: "Araçta", label: "Yolda", short: "5" },
-    { key: "Teslim edildi", label: "Teslim Edildi", short: "✓" },
+  // Duraklar uygulamadaki aşama renkleriyle (constants/hat.ts Stage); "done" = geçildiyse yazılan
+  var STOPS = [
+    { key: "Teslim alınacak", now: "Alınacak", done: "Teslim alındı", c: "#d97706" },
+    { key: "Yıkamada", now: "Yıkanıyor", done: "Yıkandı", c: "#2563eb" },
+    { key: "Hazır", now: "Hazır", done: "Hazırlandı", c: "#16a34a" },
+    { key: "Teslim edilecek", now: "Teslimatta", done: "Teslimata alındı", c: "#0284c7" },
+    { key: "Araçta", now: "Yolda", done: "Yola çıktı", c: "#ea580c" },
+    { key: "Teslim edildi", now: "Teslim edildi", done: "Teslim edildi", c: "#0f766e" }
   ];
   // Müşteriye her aşamada ne olduğu sade dille
   var LINES = {
@@ -124,15 +177,20 @@
     "Araçta": "Halılarınız araçta, adresinize doğru yoldayız.",
     "Teslim edildi": "Halılarınız teslim edildi. Bizi tercih ettiğiniz için teşekkürler!"
   };
+  var CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  var PHONE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>';
+  var PIN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.6"/></svg>';
 
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 
+  var MONTHS = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+  var DAYS = ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"];
   function fmtDate(s) {
     if (!s) return "—";
-    var p = String(s).split("-");
+    var p = String(s).slice(0, 10).split("-");
     if (p.length !== 3) return s;
-    var months = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
-    return Number(p[2]) + " " + (months[Number(p[1]) - 1] || "") + " " + p[0];
+    var d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    return Number(p[2]) + " " + (MONTHS[Number(p[1]) - 1] || "") + (isNaN(d.getTime()) ? "" : " " + DAYS[d.getDay()]);
   }
 
   function phoneDigits(p) {
@@ -152,6 +210,35 @@
 
   var orderId = new URLSearchParams(window.location.search).get("id");
   var wantsLocation = new URLSearchParams(window.location.search).get("konum") === "1";
+  // Teslim mesajındaki "Bizi değerlendirin" bağlantısı (&puan=1): sayfa açılınca puan kartına kayar
+  var wantsRating = new URLSearchParams(window.location.search).get("puan") === "1";
+  // Sipariş / hazır mesajındaki "evde olup olmayacağınızı bildirin" bağlantısı (&yanit=1): yanıt kartına kayar
+  var wantsReply = new URLSearchParams(window.location.search).get("yanit") === "1";
+  var STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.85 6.03 6.6.73-4.92 4.47 1.38 6.5L12 17.06l-5.91 3.27 1.38-6.5L2.55 9.36l6.6-.73z"/></svg>';
+  var STAR_TEXT = ["", "Çok kötü", "Kötü", "Orta", "İyi", "Çok iyi"];
+
+  // Google yorum bağlantısı (track_order → google_yorum; firma uygulamada Firma Profili / Firmalar'a yapıştırır).
+  // Yalnız https + Google alan adı açılır; adres bölümünde yalnız sunucu adı (+ kapı) kabul edilir — uygulamadaki
+  // store/google-review isGoogleUrl ile aynı kural.
+  var GOOGLE_HOST = /(^|\.)(google\.[a-z]{2,3}(\.[a-z]{2})?|g\.page|goo\.gl|g\.co)$/i;
+  function googleReviewUrl(u) {
+    var a = /^https:\/\/([^\/?#]*)/i.exec(String(u || ""));
+    var h = a ? /^([a-z0-9.-]+)(?::\d+)?$/i.exec(a[1]) : null;
+    return h && GOOGLE_HOST.test(h[1]) ? String(u) : "";
+  }
+  var googleUrl = "";
+  // Müşterinin yazdığı yorumu panoya alır (Google'da yeniden yazmasın). Olmazsa sessizce geçilir; bağlantı yine açılır.
+  function copyText(t, done) {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(t).then(done, function () {}); return; }
+      var ta = document.createElement("textarea");
+      ta.value = t; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      var ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      if (ok) done();
+    } catch (e) {}
+  }
 
   // Firma logosu; yoksa ya da açılamazsa firma adının baş harfleri. Yalnız https adresi kabul edilir.
   function showLogo(url, name) {
@@ -173,51 +260,274 @@
   function render(data) {
     var card = document.getElementById("card");
     if (!data || !data.bulundu) {
-      card.innerHTML = '<div class="state">😕 Sipariş bulunamadı.<br/>Bağlantı eski olabilir; lütfen firmanızla iletişime geçin.</div>';
+      card.innerHTML = '<div class="state"><b>Sipariş bulunamadı</b>Bağlantı eski olabilir; lütfen firmanızla iletişime geçin.</div>';
       return;
     }
     if (data.firma_adi) document.getElementById("brand").textContent = data.firma_adi;
     showLogo(data.firma_logo, data.firma_adi);
-    var idx = STEPS.findIndex(function (s) { return s.key === data.durum; });
-    var stepsHtml = STEPS.map(function (s, i) {
-      var cls = i < idx ? "done" : i === idx ? "current" : "";
-      return '<div class="step ' + cls + '"><div class="line"></div><div class="circle">' + (i < idx ? "✓" : s.short) + '</div><div class="label">' + s.label + '</div></div>';
+    googleUrl = googleReviewUrl(data.google_yorum);
+    var idx = STOPS.findIndex(function (s) { return s.key === data.durum; });
+    var delivered = data.durum === "Teslim edildi";
+
+    var hat = STOPS.map(function (s, i) {
+      // Teslim edildiyse yolculuk bitti: son durak da dolu ✓, teşekkür cümlesi altında
+      var state = i < idx || delivered ? "done" : i === idx ? "now" : "todo";
+      var label = state === "done" ? s.done : s.now;
+      var extra = delivered && i === STOPS.length - 1 ? '<div class="note">' + esc(LINES[s.key]) + '</div>' : "";
+      if (state === "now") {
+        extra = '<div class="note">' + esc(LINES[s.key] || "") + '</div>';
+        if (s.key === "Teslim alınacak" && data.alis_tarihi) extra += '<div class="when">Alış günü: ' + fmtDate(data.alis_tarihi) + '</div>';
+        else if (!delivered && data.teslim_tarihi && i <= 3) extra += '<div class="when">Tahmini teslim: ' + fmtDate(data.teslim_tarihi) + '</div>';
+        // Araçtayken tahmini varış (loadEta doldurur; süre yoksa gizli kalır)
+        if (s.key === "Araçta") extra += '<div class="when" id="eta" hidden></div>';
+      } else if (state === "todo" && s.key === "Teslim edilecek" && data.teslim_tarihi && idx === 0) {
+        // Alımdan önce teslim tahmini buradadır; sonra şu anki durakta yazar (iki kez görünmesin)
+        extra = '<div class="when">tahmini ' + fmtDate(data.teslim_tarihi) + '</div>';
+      }
+      var here = state === "now" && !delivered ? '<span class="here">HALINIZ BURADA</span>' : "";
+      return '<li class="stop ' + state + '" style="--c:' + s.c + '"' + (state === "now" ? ' aria-current="step"' : "") + '>' +
+        '<div class="mark">' + (state === "done" ? CHECK : "") + '</div>' +
+        '<div class="txt"><div class="lbl">' + esc(label) + here + '</div>' + extra + '</div></li>';
     }).join("");
 
     var rows = "";
-    if (data.alis_tarihi) rows += '<div class="row"><div class="k">Alış</div><div class="v">' + fmtDate(data.alis_tarihi) + '</div></div>';
-    if (data.teslim_tarihi && data.durum !== "Teslim edildi") rows += '<div class="row"><div class="k">Tahmini teslim</div><div class="v">' + fmtDate(data.teslim_tarihi) + '</div></div>';
-    if (data.parca) rows += '<div class="row"><div class="k">Parça</div><div class="v">' + esc(data.parca) + ' adet</div></div>';
+    if (data.alis_tarihi && data.durum !== "Teslim alınacak") rows += '<div class="row"><div class="k">Alış</div><div class="v">' + fmtDate(data.alis_tarihi) + '</div></div>';
+    if (data.parca) rows += '<div class="row"><div class="k">Parça</div><div class="v num">' + esc(data.parca) + ' adet</div></div>';
     if (data.urun_ozet) rows += '<div class="row"><div class="k">Ürünler</div><div class="v">' + esc(data.urun_ozet) + '</div></div>';
 
     var contact = "";
     if (data.firma_tel) {
       contact = '<div class="btn-row">' +
-        '<a class="btn btn-call" href="tel:' + esc(String(data.firma_tel).replace(/\s/g, "")) + '">📞 Ara</a>' +
+        '<a class="btn btn-call" href="tel:' + esc(String(data.firma_tel).replace(/\s/g, "")) + '">' + PHONE + 'Ara</a>' +
         '<a class="btn btn-wa" href="https://wa.me/' + phoneDigits(data.firma_tel) + '">WhatsApp</a>' +
         '</div>';
     }
 
     card.innerHTML =
-      '<div class="status-badge"><span class="dot"></span>' + esc(data.durum || "—") + '</div>' +
-      '<div class="status-line">' + esc(LINES[data.durum] || "") + '</div>' +
-      '<div class="timeline">' + stepsHtml + '</div>' +
-      rows + contact;
+      '<p class="cap">SİPARİŞİNİZİN YOLCULUĞU</p>' +
+      '<ol class="hat">' + hat + '</ol>' +
+      (rows ? '<div class="rows">' + rows + '</div>' : "") + contact;
 
-    // Konum paylaşımı: teslim edilmemiş siparişte göster (firma istediyse en üstte vurgulu)
-    if (data.durum !== "Teslim edildi") renderLocation(data, wantsLocation);
+    // Müşteri yanıtı (v7, supabase/takip-yanit.sql): alış ya da teslim günü evde olacak mı. Sunucu desteklemiyorsa
+    // (yanit_destek yok) ya da ziyaret günü belli değilse kart çıkmaz.
+    // Geçmiş gün sorulmaz (gecikmiş siparişte "8 Kasım geleceğiz" olmasın — firma arar). Yıkamadaki siparişte teslim günü
+    // yalnız bugün/yarınsa sorulur (akşamdan "yarın geliyoruz"; daha ilerisi henüz tahmini)
+    var REPLY_STAGES = { "Teslim alınacak": 1, "Hazır": 1, "Teslim edilecek": 1, "Araçta": 1 };
+    var vday = String(data.ziyaret_gun || "").slice(0, 10);
+    var tmr = new Date(); tmr.setDate(tmr.getDate() + 1);
+    var stageOk = REPLY_STAGES[data.durum] || (data.durum === "Yıkamada" && vday <= ymd(tmr));
+    if (data.yanit_destek && vday && vday >= ymd(new Date()) && stageOk) renderReply(data, wantsReply);
+    else document.getElementById("replycard").hidden = true;
+
+    // Havale / EFT hesabı (sunucu yalnız firma ayarı açık + sipariş ölçülmüş ve ödenmemişse gönderir)
+    renderBank(data.banka, data.makbuz);
+
+    // Konum paylaşımı: halı alınmadan önce ya da firma özellikle istediyse (?konum=1, vurgulu). Halı alındıktan sonra
+    // adres zaten biliniyor ve kapıda konum kaydediliyor — her aşamada çıkan kart gereksiz kalabalıktı (2026-11-06).
+    if (!delivered) { if (wantsLocation || data.durum === "Teslim alınacak") renderLocation(wantsLocation); }
+    // Puan: teslim edilen siparişte (verilmişse teşekkür + yıldızlar; teslim mesajından gelindiyse vurgulu)
+    else renderRating(data.puan, data.yorum, wantsRating);
+    if (data.durum === "Araçta") startEta(); else stopEta();
   }
 
-  function renderLocation(data, highlight) {
-    var box = document.getElementById("loccard");
-    box.style.display = "block";
-    if (highlight) box.style.border = "2px solid #14b8a6";
+  // Araçtayken tahmini varış (2026-11-08, track_vehicle — supabase/takip-arac.sql). Şoförün konumu gösterilmez, yalnız
+  // süre. Fonksiyon kurulmadıysa ya da araç konumu yoksa sessizce hiçbir şey yazılmaz. Dakikada bir tazelenir; sipariş
+  // araçtan çıktıysa (teslim edildi) sayfa yeni durumla yeniden çizilir.
+  var etaTimer = null;
+  var etaReloadAt = 0;
+  function loadEta() {
+    rpc("track_vehicle", { order_id: orderId }).then(function (r) {
+      // Araçtan çıktı: yeni durumla yeniden çiz (iki sorgu bir an çelişirse art arda yüklenmesin: en çok 30 sn'de bir)
+      if (r && r.yolda === false && Date.now() - etaReloadAt > 30000) { etaReloadAt = Date.now(); stopEta(); load(3); return; }
+      var el = document.getElementById("eta");
+      if (!el) return;
+      if (r && r.yolda && r.dakika) {
+        el.textContent = "Tahmini varış: yaklaşık " + r.dakika + " dakika";
+        el.hidden = false;
+      } else {
+        el.hidden = true;
+      }
+    }).catch(function () {});
+  }
+  function startEta() { loadEta(); if (!etaTimer) etaTimer = setInterval(loadEta, 60000); }
+  function stopEta() { if (etaTimer) { clearInterval(etaTimer); etaTimer = null; } }
+
+  // ── Müşteri yanıtı (v7) ──
+  function ymd(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+  function dayWord(s) {
+    var t = new Date();
+    if (s === ymd(t)) return "Bugün";
+    if (s === ymd(new Date(t.getFullYear(), t.getMonth(), t.getDate() + 1))) return "Yarın";
+    return fmtDate(s);
+  }
+  function renderReply(data, highlight) {
+    var box = document.getElementById("replycard");
+    var pickup = data.durum === "Teslim alınacak";
+    var day = dayWord(String(data.ziyaret_gun).slice(0, 10));
+    var title = pickup ? "Halılarınızı almaya geliyoruz" : "Halılarınızı getiriyoruz";
+    box.hidden = false;
+    box.classList.toggle("hl", !!highlight && !data.yanit);
+    if (data.yanit) {
+      box.innerHTML = '<p class="loc-title">' + esc(title) + '</p>' +
+        (data.yanit === "evde"
+          ? '<div class="ok">' + esc(day) + ' evde olacağınızı ilettiniz. Teşekkürler!</div>'
+          : '<div class="ok no">' + esc(day) + ' evde olmayacağınızı ilettiniz. Sizi arayıp uygun günü birlikte belirleyeceğiz.</div>') +
+        '<div class="btn-row"><button class="btn btn-call" id="replychange">Yanıtı değiştir</button></div>';
+      document.getElementById("replychange").onclick = function () { data.yanit = null; renderReply(data, false); };
+    } else {
+      box.innerHTML = '<p class="loc-title">' + esc(title) + '</p>' +
+        '<p class="loc-text">' + esc(day) + (pickup ? " halılarınızı almak için" : " halılarınızı teslim etmek için") +
+        ' adresinize geleceğiz. Evde olacak mısınız?</p>' +
+        '<div class="btn-row ask"><button class="btn btn-loc" id="replyyes">Evdeyim</button>' +
+        '<button class="btn btn-no" id="replyno">Evde değilim</button></div><div id="replymsg"></div>';
+      document.getElementById("replyyes").onclick = function () { sendReply(data, "evde"); };
+      document.getElementById("replyno").onclick = function () { sendReply(data, "yok"); };
+    }
+    if (highlight) box.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+  function sendReply(data, val) {
+    var yes = document.getElementById("replyyes");
+    var no = document.getElementById("replyno");
+    var msg = document.getElementById("replymsg");
+    yes.disabled = true; no.disabled = true; msg.innerHTML = "";
+    rpc("reply_order", { p_order: orderId, p_reply: val })
+      .then(function (r) {
+        if (r && r.ok) { data.yanit = val; renderReply(data, false); return; }
+        yes.disabled = false; no.disabled = false;
+        msg.innerHTML = '<div class="err">Yanıtınız kaydedilemedi. Lütfen firmayı arayın.</div>';
+      })
+      .catch(function () {
+        yes.disabled = false; no.disabled = false;
+        msg.innerHTML = '<div class="err">Bağlantı hatası, tekrar deneyin.</div>';
+      });
+  }
+
+  // ── Havale / EFT (track_order → banka / makbuz; ProTakip "takip sayfasında IBAN") ──
+  // Müşteri "IBAN'ı atar mısınız" diye aramadan hesabı görür, tek dokunuşla kopyalar. Tutar burada YAZMAZ (hesap fişinde).
+  function ibanGroups(s) { return String(s || "").replace(/\s+/g, "").toUpperCase().replace(/(.{4})/g, "$1 ").trim(); }
+  function renderBank(list, receiptNo) {
+    var box = document.getElementById("paycard");
+    var rows = (Array.isArray(list) ? list : []).filter(function (a) { return a && a.iban; });
+    if (!rows.length) { box.hidden = true; return; }
+    box.hidden = false;
     box.innerHTML =
-      '<p class="loc-title">📍 Adresinizi kolay bulalım</p>' +
-      '<p class="loc-text">Halıların alınacağı / teslim edileceği adresteyken aşağıdaki düğmeye basın; konumunuz yalnızca bu firmaya iletilir.</p>' +
-      '<button class="btn btn-loc" id="locbtn">📍 Konumumu Gönder</button><div id="locmsg"></div>';
-    document.getElementById("locbtn").onclick = sendLocation;
+      '<p class="loc-title">Havale / EFT ile ödeme</p>' +
+      '<p class="loc-text">Ödemenizi aşağıdaki hesaba yapabilirsiniz.' +
+        (receiptNo ? ' Açıklamaya fiş numaranızı yazın: <b>' + esc(receiptNo) + '</b>' : '') + '</p>' +
+      rows.map(function (a, i) {
+        return '<div class="acct">' +
+          (a.banka ? '<div class="bn">' + esc(a.banka) + '</div>' : '') +
+          (a.sahip ? '<div class="hd">' + esc(a.sahip) + '</div>' : '') +
+          '<div class="ib">' + esc(ibanGroups(a.iban)) + '</div>' +
+          '<button class="btn btn-call" data-i="' + i + '">IBAN\'ı kopyala</button></div>';
+      }).join("");
+    Array.prototype.forEach.call(box.querySelectorAll("button[data-i]"), function (btn) {
+      btn.onclick = function () {
+        var a = rows[Number(btn.getAttribute("data-i"))];
+        copyText(String(a.iban).replace(/\s+/g, ""), function () {
+          btn.textContent = "Kopyalandı ✓";
+          setTimeout(function () { btn.textContent = "IBAN'ı kopyala"; }, 2500);
+        });
+      };
+    });
   }
+
+  function starsHtml(n) {
+    var s = "";
+    for (var i = 1; i <= 5; i++) s += '<span class="star' + (i <= n ? " on" : "") + '">' + STAR + '</span>';
+    return s;
+  }
+
+  function renderRating(given, comment, highlight) {
+    var box = document.getElementById("ratecard");
+    box.hidden = false;
+    box.classList.toggle("hl", !!highlight);
+    if (given) {
+      box.innerHTML =
+        '<p class="loc-title">Değerlendirmeniz için teşekkürler</p>' +
+        '<div class="stars static" aria-label="' + given + ' yıldız">' + starsHtml(given) + '</div>' +
+        (comment ? '<p class="quote">“' + esc(comment) + '”</p>' : "") +
+        // Google'da yorum: kaç yıldız verilirse verilsin aynı düğme (yalnız memnun müşteriyi yönlendirmek Google
+        // kurallarına aykırı). Yorum yazıldıysa dokununca panoya alınır, Google'da yapıştırmak yeter.
+        (googleUrl
+          ? '<p class="gask">Görüşünüzü Google\'da da paylaşır mısınız?</p>' +
+            '<a class="btn btn-loc" id="gbtn" href="' + esc(googleUrl) + '" target="_blank" rel="noopener noreferrer">Google\'da yorum yaz</a>' +
+            (comment ? '<p class="ghint" id="ghint">Dokununca yazdığınız yorum kopyalanır; Google\'da yapıştırmanız yeterli.</p>' : "")
+          : "") +
+        '<button class="btn btn-call' + (googleUrl ? " rate-more" : "") + '" id="ratechange">' + (googleUrl ? "Puanı değiştir" : "Değiştir") + '</button>';
+      document.getElementById("ratechange").onclick = function () { ratingForm(given, comment); };
+      if (googleUrl && comment) {
+        document.getElementById("gbtn").onclick = function () {
+          copyText(comment, function () {
+            var h = document.getElementById("ghint");
+            if (h) h.textContent = "Yorumunuz kopyalandı. Google'da yapıştırabilirsiniz.";
+          });
+        };
+      }
+    } else {
+      ratingForm(0, "");
+    }
+    if (highlight) box.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  function ratingForm(cur, comment) {
+    var box = document.getElementById("ratecard");
+    var pick = cur || 0;
+    box.innerHTML =
+      '<p class="loc-title">Hizmetimizi değerlendirin</p>' +
+      '<p class="loc-text">Yıldıza dokunun; isterseniz kısa bir not da bırakın.</p>' +
+      '<div class="stars" id="stars" role="radiogroup" aria-label="Puan">' +
+        [1, 2, 3, 4, 5].map(function (n) {
+          return '<button type="button" class="star" data-n="' + n + '" role="radio" aria-label="' + n + ' yıldız">' + STAR + '</button>';
+        }).join("") +
+      '</div><div class="stxt" id="stxt"></div>' +
+      '<textarea class="rnote" id="rnote" maxlength="500" placeholder="Yorumunuz (isteğe bağlı)">' + esc(comment || "") + '</textarea>' +
+      '<button class="btn btn-loc" id="ratebtn" disabled>Gönder</button><div id="ratemsg"></div>';
+    var stars = document.querySelectorAll("#stars .star");
+    function paint() {
+      Array.prototype.forEach.call(stars, function (b) {
+        var n = Number(b.getAttribute("data-n"));
+        b.classList.toggle("on", n <= pick);
+        b.setAttribute("aria-checked", n === pick ? "true" : "false");
+      });
+      document.getElementById("stxt").textContent = STAR_TEXT[pick] || "";
+      document.getElementById("ratebtn").disabled = !pick;
+    }
+    Array.prototype.forEach.call(stars, function (b) {
+      b.onclick = function () { pick = Number(b.getAttribute("data-n")); paint(); };
+    });
+    paint();
+    document.getElementById("ratebtn").onclick = function () {
+      var btn = document.getElementById("ratebtn");
+      var msg = document.getElementById("ratemsg");
+      var note = document.getElementById("rnote").value.trim();
+      btn.disabled = true; btn.textContent = "Gönderiliyor…"; msg.innerHTML = "";
+      rpc("rate_order", { p_order: orderId, p_stars: pick, p_comment: note || null })
+        .then(function (r) {
+          if (r && r.ok) { renderRating(pick, note, false); return; }
+          btn.disabled = false; btn.textContent = "Gönder";
+          msg.innerHTML = '<div class="err">Puan kaydedilemedi. Lütfen daha sonra tekrar deneyin.</div>';
+        })
+        .catch(function () {
+          btn.disabled = false; btn.textContent = "Gönder";
+          msg.innerHTML = '<div class="err">Bağlantı hatası, tekrar deneyin.</div>';
+        });
+    };
+  }
+
+  function renderLocation(highlight) {
+    var box = document.getElementById("loccard");
+    box.hidden = false;
+    box.classList.toggle("hl", !!highlight);
+    box.innerHTML =
+      '<p class="loc-title">Adresinizi kolay bulalım</p>' +
+      '<p class="loc-text">Halıların alınacağı / teslim edileceği adresteyken aşağıdaki düğmeye basın; konumunuz yalnızca bu firmaya iletilir.</p>' +
+      '<button class="btn btn-loc" id="locbtn">' + PIN + 'Konumumu gönder</button><div id="locmsg"></div>';
+    document.getElementById("locbtn").onclick = sendLocation;
+    if (highlight) box.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  function resetLocBtn(btn) { btn.disabled = false; btn.innerHTML = PIN + "Konumumu gönder"; }
 
   function sendLocation() {
     var btn = document.getElementById("locbtn");
@@ -229,18 +539,18 @@
       rpc("share_order_location", { p_order_id: orderId, p_lat: pos.coords.latitude, p_lng: pos.coords.longitude, p_acc: pos.coords.accuracy || null })
         .then(function (r) {
           if (r && r.ok) {
-            document.getElementById("loccard").innerHTML = '<div class="ok">✓ Konumunuz iletildi. Teşekkür ederiz!</div>';
+            document.getElementById("loccard").innerHTML = '<div class="ok">Konumunuz iletildi. Teşekkür ederiz!</div>';
           } else {
-            btn.disabled = false; btn.textContent = "📍 Konumumu Gönder";
+            resetLocBtn(btn);
             msg.innerHTML = '<div class="err">Konum kaydedilemedi. Lütfen firmayı arayın.</div>';
           }
         })
         .catch(function () {
-          btn.disabled = false; btn.textContent = "📍 Konumumu Gönder";
+          resetLocBtn(btn);
           msg.innerHTML = '<div class="err">Bağlantı hatası, tekrar deneyin.</div>';
         });
     }, function (err) {
-      btn.disabled = false; btn.textContent = "📍 Konumumu Gönder";
+      resetLocBtn(btn);
       msg.innerHTML = '<div class="err">' + (err && err.code === 1 ? "Konum izni verilmedi. Tarayıcı ayarlarından konuma izin verip tekrar deneyin." : "Konum alınamadı, tekrar deneyin.") + '</div>';
     }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
   }
@@ -258,7 +568,7 @@
         render(data);
       })
       .catch(function () {
-        document.getElementById("card").innerHTML = '<div class="state">Bağlantı hatası. İnternetinizi kontrol edip tekrar deneyin.</div>';
+        document.getElementById("card").innerHTML = '<div class="state"><b>Bağlantı hatası</b>İnternetinizi kontrol edip tekrar deneyin.</div>';
       });
   }
 
