@@ -4,9 +4,10 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="robots" content="noindex" />
-<!-- v8 (2026-11-11): "Tekrar yıkat" kartı (linkten sipariş: gün seç → firmaya talep düşer). v7: müşteri yanıtı kartı + puandan sonra "Google'da yorum yaz" + havale/EFT hesabı (firma ayarıyla). Uygulama bu işaretlerle sayfanın yanıtı / talebi desteklediğini anlar (store/order-replies, store/order-requests) -->
+<!-- v9 (2026-11-13): firma sitesi — siparis.html?s=KOD ile müşteri (yeni ya da eski) kendi siparişini verir, fiyatları görür; takip sayfasından siteye bağlantı. Aynı sayfa üç dosya olarak yayınlanır (index / tesekkur / siparis — yalnız önizleme başlığı ve kapağı farklı; scripts/make-tracking-bundle.cjs). v8: "Tekrar yıkat" kartı. v7: müşteri yanıtı kartı + "Google'da yorum yaz" + havale/EFT hesabı. Uygulama bu işaretlerle sayfanın neyi desteklediğini anlar (store/order-replies, store/order-requests) -->
 <meta name="takip-yanit" content="1" />
 <meta name="takip-talep" content="1" />
+<meta name="site-siparis" content="1" />
 <meta name="theme-color" content="#0f766e" />
 <meta name="description" content="Siparişinizi adım adım takip edin, konumunuzu tek dokunuşla iletin." />
 <!-- WhatsApp / bağlantı önizleme kartı -->
@@ -155,13 +156,36 @@
   .pcs .pn { min-width: 36px; text-align: center; font: 700 24px/1 var(--num); color: var(--ink); }
   .pcs .pn.none { color: var(--faint); }
   .btn-loc.next { margin-top: 12px; }
+
+  /* Firma sitesi (v9): müşteri kendi siparişini verir (siparis.html?s=KOD) + fiyat listesi */
+  .fld { display: block; margin: 0 0 12px; }
+  .fld .fl { display: block; font-size: 13.5px; font-weight: 700; color: var(--ink); margin: 0 0 6px; }
+  .fld .fl small { font-weight: 400; color: var(--sub); }
+  .fld input, .fld textarea { width: 100%; border: 1.5px solid var(--line); border-radius: 12px; padding: 12px; font: 16px var(--body); color: var(--ink); background: #fff; }
+  .fld textarea { min-height: 76px; resize: vertical; }
+  .fld input:focus, .fld textarea:focus { outline: none; border-color: var(--teal); }
+  .fld.bad input, .fld.bad textarea { border-color: #f87171; }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .btn-pin { background: #fff; color: var(--teal); border: 1.5px dashed var(--teal); padding: 11px; font-size: 14.5px; margin: -2px 0 16px; }
+  .btn-pin.on { border-style: solid; background: #ecf7f5; }
+  .sec { font-size: 13.5px; font-weight: 700; color: var(--ink); margin: 2px 0 8px; }
+  .plist { margin: 0; padding: 0; list-style: none; }
+  .plist li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+  .plist li:last-child { border-bottom: none; }
+  .plist .pv { font-family: var(--num); font-weight: 700; font-size: 19px; white-space: nowrap; }
+  .plist .pv small { font-family: var(--body); font-size: 12.5px; font-weight: 600; color: var(--sub); margin-left: 3px; }
+  .pnote { font-size: 13px; color: var(--sub); line-height: 1.45; margin: 10px 0 0; }
+  .sitelink { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--ink); }
+  .sitelink b { display: block; font-size: 15px; }
+  .sitelink span { display: block; font-size: 13px; color: var(--sub); margin-top: 2px; }
+  .sitelink .go { margin-left: auto; color: var(--teal); font: 700 26px/1 var(--body); }
 </style>
 </head>
 <body>
   <header class="hero">
     <div class="logo" id="logo" hidden></div>
     <div class="brand" id="brand">Sipariş Takip</div>
-    <h1 class="title">Halınız nerede?</h1>
+    <h1 class="title" id="htitle">Halınız nerede?</h1>
   </header>
   <main class="wrap">
     <section class="card" id="card" aria-live="polite">
@@ -172,7 +196,9 @@
     <section class="card paycard" id="paycard" hidden></section>
     <section class="card ratecard" id="ratecard" hidden></section>
     <section class="card reqcard" id="reqcard" hidden aria-live="polite"></section>
-    <p class="foot">Bu bağlantı yalnızca bu siparişin durumunu gösterir.</p>
+    <section class="card pricecard" id="pricecard" hidden></section>
+    <section class="card" id="sitelinkcard" hidden></section>
+    <p class="foot" id="foot">Bu bağlantı yalnızca bu siparişin durumunu gösterir.</p>
   </main>
 
 <script>
@@ -354,6 +380,12 @@
     // Linkten sipariş: yalnız teslim edilmiş siparişte sorulur (halısı bizdeyken "tekrar yıkat" olmaz)
     if (delivered) loadRequest(); else document.getElementById("reqcard").hidden = true;
     if (data.durum === "Araçta") startEta(); else stopEta();
+    // Teslim edilmiş siparişte "Halınız nerede?" sorusu anlamsız (2026-11-13 kullanıcı)
+    if (data.durum === "Teslim edildi") {
+      document.getElementById("htitle").textContent = "Teşekkür ederiz";
+      document.title = "Teşekkür ederiz · Sipariş Takip";
+    }
+    loadSiteLink();
   }
 
   // Araçtayken tahmini varış (2026-11-08, track_vehicle — supabase/takip-arac.sql). Şoförün konumu gösterilmez, yalnız
@@ -720,6 +752,223 @@
     }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
   }
 
+  // ── Firma sitesi (v9; siparis.html?s=KOD, supabase/firma-sitesi.sql) ──
+  // Müşteri — yeni ya da eski — kendi siparişini verir, fiyatları görür. Talep firma uygulamasına düşer, uygulama onu
+  // doğrudan siparişe çevirir. Gönderilen talebin kimliği bu telefonda saklanır: yeniden açınca "alındı" / "siparişiniz
+  // oluşturuldu → takip" görünür; ad, telefon, adres sonraki siparişte hazır gelir.
+  var siteCode = String(new URLSearchParams(window.location.search).get("s") || "").trim().toUpperCase().slice(0, 12);
+  var SITE_KEY = "halitakip.site." + siteCode;
+  var sitePin = null; // "Konumumu ekle": { lat, lng }
+  function siteSaved() { try { return JSON.parse(localStorage.getItem(SITE_KEY) || "null") || {}; } catch (e) { return {}; } }
+  function siteSave(o) { try { localStorage.setItem(SITE_KEY, JSON.stringify(o)); } catch (e) {} }
+  function tlPrice(v) {
+    var n = Number(v);
+    if (!isFinite(n)) return esc(v);
+    var s = Math.round(n) === n ? String(n) : n.toFixed(2).replace(".", ",");
+    return s.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " TL";
+  }
+  var SITE_ERR = {
+    ad: function () { return "Adınızı yazın."; },
+    telefon: function () { return "Cep telefonunuzu 05xx xxx xx xx biçiminde yazın."; },
+    adres: function () { return "Adresinizi mahalle, sokak ve kapı numarasıyla yazın."; },
+    gun: function () { return "Bu gün seçilemiyor. Lütfen başka bir gün seçin."; },
+    kapali_gun: function () { return "Seçtiğiniz gün kapalıyız. Lütfen başka bir gün seçin."; },
+    acik: function (r) { return (r.gun ? fmtDate(r.gun) + " günü" : "Yakında") + " alınacak bir siparişiniz zaten var. Değiştirmek için bizi arayın."; },
+    isleniyor: function () { return "Siparişiniz şu an hazırlanıyor. Değişiklik için bizi arayın."; },
+    musteri: function () { return "Siparişinizi telefonla alalım; lütfen bizi arayın."; },
+    yogun: function () { return "Şu an çok yoğunuz; lütfen bizi arayın."; },
+    kapali: function () { return "Şu an siteden sipariş almıyoruz; lütfen bizi arayın."; },
+    tekrar: function () { return "Siparişiniz zaten gönderildi. Sayfayı yenileyip kontrol edin."; },
+    bulunamadi: function () { return "Bu bağlantı geçersiz. Lütfen firmayı arayın."; }
+  };
+  function siteCall(info) {
+    var tel = String(info.firma_tel || "").replace(/[^\d+]/g, "");
+    return tel ? '<a class="btn btn-call" href="tel:' + esc(tel) + '">' + PHONE + 'Bizi arayın</a>' : '';
+  }
+  function renderPrices(info) {
+    var box = document.getElementById("pricecard");
+    var list = Array.isArray(info.fiyatlar) ? info.fiyatlar : [];
+    if (!list.length) { box.hidden = true; return; }
+    function rows(xs) {
+      return '<ul class="plist">' + xs.map(function (p) {
+        return '<li><span>' + esc(p.ad) + '</span><span class="pv">' + tlPrice(p.fiyat) + '<small>/ ' + esc(p.birim || "adet") + '</small></span></li>';
+      }).join("") + '</ul>';
+    }
+    var main = list.filter(function (p) { return !p.hizmet; });
+    var extra = list.filter(function (p) { return p.hizmet; });
+    box.innerHTML = '<p class="loc-title">Fiyatlarımız</p>' + (main.length ? rows(main) : "") +
+      (extra.length ? '<p class="sec" style="margin-top:14px">Ek hizmetler</p>' + rows(extra) : "") +
+      '<p class="pnote">m² fiyatlı halılarda tutar, halı ölçüldükten sonra kesinleşir' + (info.bolge ? '; fiyat adresinize göre değişebilir' : '') + '.</p>';
+    box.hidden = false;
+  }
+  function renderSite(info, req, edit) {
+    var box = document.getElementById("card");
+    var base = /^\d{4}-\d{2}-\d{2}$/.test(String(info.bugun || "")) ? parseYmd(info.bugun) : new Date();
+    var saved = siteSaved();
+    if (!info.acik) {
+      box.innerHTML = '<div class="state"><b>Şu an siteden sipariş almıyoruz</b>Siparişiniz için bizi arayın.</div>' +
+        (siteCall(info) ? '<div class="btn-row">' + siteCall(info) + '</div>' : '');
+      return;
+    }
+    var day = req ? String(req.gun || "").slice(0, 10) : "";
+    // 1) Gönderilmiş, firma henüz çevirmemiş
+    if (req && req.durum === "yeni" && !edit) {
+      box.innerHTML = '<p class="loc-title">Siparişiniz alındı</p>' +
+        '<div class="ok">' + esc(dayLong(day, base)) + ' halılarınızı almaya geliyoruz' + (req.adet ? ' (' + esc(req.adet) + ' parça)' : '') + '.</div>' +
+        '<p class="pnote">Değiştirmek isterseniz günü değiştirebilir ya da bizi arayabilirsiniz.</p>' +
+        '<div class="btn-row"><button class="btn btn-call" id="sitechange">Günü değiştir</button>' + siteCall(info) + '</div>';
+      document.getElementById("sitechange").onclick = function () { renderSite(info, req, true); };
+      return;
+    }
+    // 2) Firma siparişe çevirdi: takip bağlantısı
+    if (req && req.durum === "siparis" && !edit) {
+      box.innerHTML = '<p class="loc-title">Siparişiniz oluşturuldu</p>' +
+        '<div class="ok">' + esc(dayLong(day, base)) + ' halılarınızı almaya geliyoruz. Teşekkür ederiz!</div>' +
+        (req.siparis ? '<a class="btn btn-loc next" href="./?id=' + encodeURIComponent(req.siparis) + '">Halınızı takip edin</a>' : '') +
+        '<div class="btn-row"><button class="btn btn-call" id="sitenew">Yeni sipariş ver</button></div>';
+      document.getElementById("sitenew").onclick = function () {
+        siteSave({ ad: saved.ad, tel: saved.tel, adres: saved.adres });
+        renderSite(info, null, false);
+      };
+      return;
+    }
+    // 3) Form: ad, telefon, adres (+ isteğe bağlı konum), gün, parça, not
+    var days = requestDays(info, edit ? day : "").list;
+    var has = function (s) { return days.some(function (x) { return x.s === s; }); };
+    var pick = edit && has(day) ? day : wantsDay && has(wantsDay) ? wantsDay : "";
+    var pcs = edit && req && req.adet ? Number(req.adet) || 0 : 0;
+    box.innerHTML =
+      '<p class="loc-title">' + (edit ? "Siparişinizi değiştirin" : "Halılarınızı kapınızdan alalım") + '</p>' +
+      '<p class="loc-text">Bilgilerinizi yazın, gün seçin. Siparişiniz doğrudan bize ulaşır; aramanıza gerek yok.</p>' +
+      '<label class="fld" id="f-ad"><span class="fl">Adınız soyadınız</span><input id="s-ad" autocomplete="name" maxlength="60" value="' + esc(saved.ad || "") + '"></label>' +
+      '<label class="fld" id="f-tel"><span class="fl">Cep telefonunuz</span><input id="s-tel" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="05xx xxx xx xx" value="' + esc(saved.tel || "") + '"></label>' +
+      '<label class="fld" id="f-adres"><span class="fl">Adresiniz</span><textarea id="s-adres" autocomplete="street-address" maxlength="300" placeholder="Mahalle, sokak, kapı no, daire">' + esc(saved.adres || "") + '</textarea></label>' +
+      '<button type="button" class="btn btn-pin" id="s-pin"></button>' +
+      '<p class="sec">Hangi gün alalım?</p>' +
+      '<div class="days" id="s-days" role="radiogroup" aria-label="Alış günü">' +
+        days.map(function (x) {
+          return '<button type="button" class="day" role="radio" data-d="' + x.s + '"><span class="dw">' + esc(x.w) +
+            '</span><span class="dn">' + x.d.getDate() + ' ' + MONTHS[x.d.getMonth()] + '</span></button>';
+        }).join("") +
+      '</div>' +
+      '<div class="pcs"><span class="pk">Kaç parça?<small>Bilmiyorsanız boş bırakın</small></span>' +
+        '<button type="button" id="s-minus" aria-label="Azalt">−</button><span class="pn" id="s-pcn" aria-live="polite"></span>' +
+        '<button type="button" id="s-plus" aria-label="Artır">+</button></div>' +
+      '<label class="fld"><span class="fl">Notunuz <small>(isteğe bağlı)</small></span><textarea id="s-not" maxlength="300" placeholder="Uygun saat, kat, zil, halının durumu…">' + esc(edit && req && req.not ? req.not : "") + '</textarea></label>' +
+      '<div class="hp" aria-hidden="true"><label>Web sitesi <input id="s-hp" tabindex="-1" autocomplete="off"></label></div>' +
+      '<button class="btn btn-loc" id="s-send"></button><div id="s-msg"></div>';
+    var chips = box.querySelectorAll("#s-days .day");
+    function paint() {
+      Array.prototype.forEach.call(chips, function (b) {
+        var on = b.getAttribute("data-d") === pick;
+        b.classList.toggle("on", on);
+        b.setAttribute("aria-checked", on ? "true" : "false");
+      });
+      var pn = document.getElementById("s-pcn");
+      pn.textContent = pcs > 0 ? String(pcs) : "—";
+      pn.classList.toggle("none", pcs <= 0);
+      var pin = document.getElementById("s-pin");
+      pin.classList.toggle("on", !!sitePin);
+      pin.innerHTML = PIN + (sitePin ? "Konumunuz eklendi ✓" : "Konumumu ekle (isteğe bağlı)");
+      var btn = document.getElementById("s-send");
+      btn.disabled = !pick;
+      btn.textContent = pick ? "Siparişi gönder" : "Önce gün seçin";
+    }
+    Array.prototype.forEach.call(chips, function (b) {
+      b.onclick = function () { pick = b.getAttribute("data-d"); paint(); };
+    });
+    document.getElementById("s-minus").onclick = function () { pcs = Math.max(0, pcs - 1); paint(); };
+    document.getElementById("s-plus").onclick = function () { pcs = Math.min(99, pcs + 1); paint(); };
+    document.getElementById("s-pin").onclick = function () {
+      var pin = document.getElementById("s-pin");
+      var msg = document.getElementById("s-msg");
+      if (!navigator.geolocation) { msg.innerHTML = '<div class="err">Konum alınamadı; adresi yazmanız yeterli.</div>'; return; }
+      pin.disabled = true; pin.innerHTML = PIN + "Konum alınıyor…";
+      navigator.geolocation.getCurrentPosition(function (p) {
+        sitePin = { lat: p.coords.latitude, lng: p.coords.longitude };
+        pin.disabled = false; msg.innerHTML = ""; paint();
+      }, function () {
+        pin.disabled = false; paint();
+        msg.innerHTML = '<div class="err">Konum alınamadı; adresi yazmanız yeterli.</div>';
+      }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+    };
+    paint();
+    document.getElementById("s-send").onclick = function () {
+      var btn = document.getElementById("s-send");
+      var msg = document.getElementById("s-msg");
+      var ad = document.getElementById("s-ad").value.trim();
+      var tel = document.getElementById("s-tel").value.trim();
+      var adres = document.getElementById("s-adres").value.trim();
+      var not = document.getElementById("s-not").value.trim();
+      var hp = document.getElementById("s-hp").value;
+      var digits = tel.replace(/\D/g, "");
+      // Sunucunun kuralları önceden: yanlış alan kırmızı, ilk hatanın açıklaması altta
+      var errs = [];
+      if (ad.replace(/\s+/g, " ").length < 2) errs.push(["f-ad", "ad"]);
+      if (!/^5\d{9}$/.test(digits.slice(-10)) || digits.length > 12) errs.push(["f-tel", "telefon"]);
+      if (adres.replace(/\s+/g, " ").length < 8) errs.push(["f-adres", "adres"]);
+      ["f-ad", "f-tel", "f-adres"].forEach(function (id) {
+        document.getElementById(id).classList.toggle("bad", errs.some(function (e) { return e[0] === id; }));
+      });
+      if (errs.length) { msg.innerHTML = '<div class="err">' + esc(SITE_ERR[errs[0][1]]({})) + '</div>'; return; }
+      if (!pick) return;
+      btn.disabled = true; btn.textContent = "Gönderiliyor…"; msg.innerHTML = "";
+      rpc("site_order", {
+        p_code: siteCode, p_name: ad, p_phone: tel, p_address: adres,
+        p_lat: sitePin ? sitePin.lat : null, p_lng: sitePin ? sitePin.lng : null,
+        p_day: pick, p_pieces: pcs > 0 ? pcs : null, p_note: not || null, p_hp: hp || null
+      }).then(function (r) {
+        if (r && r.ok) {
+          siteSave({ talep: r.talep || null, ad: ad, tel: tel, adres: adres });
+          renderSite(info, { durum: "yeni", gun: pick, adet: pcs > 0 ? pcs : null, not: not || null }, false);
+          window.scrollTo(0, 0);
+          return;
+        }
+        paint();
+        var why = r && r.hata;
+        msg.innerHTML = '<div class="err">' + esc(SITE_ERR[why] ? SITE_ERR[why](r) : "Siparişiniz kaydedilemedi. Lütfen bizi arayın.") + '</div>';
+      }).catch(function () {
+        paint();
+        msg.innerHTML = '<div class="err">Bağlantı hatası, tekrar deneyin.</div>';
+      });
+    };
+  }
+  function loadSite() {
+    var card = document.getElementById("card");
+    document.getElementById("htitle").textContent = "Halı yıkama siparişi";
+    document.title = "Halı Yıkama Siparişi";
+    document.getElementById("foot").textContent = "Siparişiniz doğrudan firmaya ulaşır. Bilgileriniz yalnız siparişiniz için kullanılır.";
+    rpc("site_info", { p_code: siteCode }).then(function (info) {
+      if (!info || !info.bulundu) {
+        card.innerHTML = '<div class="state"><b>Bağlantı geçersiz</b>Lütfen firmanızdan yeni bağlantı isteyin.</div>';
+        return;
+      }
+      if (info.firma_adi) document.getElementById("brand").textContent = info.firma_adi;
+      showLogo(info.firma_logo, info.firma_adi);
+      renderPrices(info);
+      var t = siteSaved().talep;
+      if (!t) { renderSite(info, null, false); return; }
+      rpc("site_request", { p_id: t }).then(function (r) {
+        renderSite(info, r && r.bulundu && r.durum !== "red" ? r : null, false);
+      }).catch(function () { renderSite(info, null, false); });
+    }).catch(function () {
+      card.innerHTML = '<div class="state"><b>Bağlantı hatası</b>İnternetinizi kontrol edip tekrar deneyin.</div>';
+    });
+  }
+  // Takip sayfasından firmanın sitesine (fiyatlar, yeni sipariş) — firmanın kodu varsa ve firma siteyi açtıysa.
+  // Fiyat listesi kapalıysa (r.fiyat yok) bağlantı "Fiyatlarımız" demez.
+  function loadSiteLink() {
+    rpc("site_link", { p_order: orderId }).then(function (r) {
+      if (!r || !r.kod) return;
+      var box = document.getElementById("sitelinkcard");
+      box.innerHTML = '<a class="sitelink" href="./siparis.html?s=' + encodeURIComponent(r.kod) + '"><div><b>' +
+        (r.fiyat ? 'Fiyatlarımız · yeni sipariş' : 'Yeni sipariş') + '</b>' +
+        '<span>' + (r.fiyat ? 'Fiyatları görün, yeniden sipariş verin' : 'Gününüzü seçin, halılarınızı alalım') + '</span></div>' +
+        '<span class="go" aria-hidden="true">›</span></a>';
+      box.hidden = false;
+    }).catch(function () {});
+  }
+
   // Sipariş az önce oluşturulduysa (mesaj hemen gider) sunucuya ulaşması birkaç saniye sürebilir:
   // bulunamazsa birkaç kez daha sorulur.
   function load(attempt) {
@@ -737,7 +986,8 @@
       });
   }
 
-  if (!orderId) render(null);
+  if (siteCode && !orderId) loadSite();
+  else if (!orderId) render(null);
   else load(0);
 </script>
 </body>
