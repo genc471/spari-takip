@@ -1,0 +1,995 @@
+[tesekkur.html](https://github.com/user-attachments/files/34813533/tesekkur.html)
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="robots" content="noindex" />
+<!-- v9 (2026-11-13): firma sitesi — siparis.html?s=KOD ile müşteri (yeni ya da eski) kendi siparişini verir, fiyatları görür; takip sayfasından siteye bağlantı. Aynı sayfa üç dosya olarak yayınlanır (index / tesekkur / siparis — yalnız önizleme başlığı ve kapağı farklı; scripts/make-tracking-bundle.cjs). v8: "Tekrar yıkat" kartı. v7: müşteri yanıtı kartı + "Google'da yorum yaz" + havale/EFT hesabı. Uygulama bu işaretlerle sayfanın neyi desteklediğini anlar (store/order-replies, store/order-requests) -->
+<meta name="takip-yanit" content="1" />
+<meta name="takip-talep" content="1" />
+<meta name="site-siparis" content="1" />
+<meta name="theme-color" content="#0f766e" />
+<meta name="description" content="Hizmetimizi değerlendirin; halılarınızı yeniden yıkatmak için gününüzü seçin." />
+<!-- WhatsApp / bağlantı önizleme kartı -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Sipariş Takip" />
+<meta property="og:locale" content="tr_TR" />
+<meta property="og:title" content="Bizi tercih ettiğiniz için teşekkürler 🙏" />
+<meta property="og:description" content="Hizmetimizi değerlendirin; halılarınızı yeniden yıkatmak için gününüzü seçin." />
+<meta property="og:image" content="https://genc471.github.io/spari-takip/kapak-tesekkur.png" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<title>Teşekkür ederiz · Sipariş Takip</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&family=Barlow+Semi+Condensed:wght@600;700&display=swap" />
+<style>
+  /* "Hat ve Durak": siparişin yolculuğu dikey bir hat, her aşama kendi renginde bir durak (uygulamayla aynı dil) */
+  :root {
+    --ink: #102026;
+    --sub: #5b6b70;
+    --faint: #8a9a9f;
+    --line: #e1e8e7;
+    --ground: #f1f5f4;
+    --card: #ffffff;
+    --teal: #0f766e;
+    --teal-pale: #ccfbf1;
+    --board: #14303a;
+    --title: "Barlow Semi Condensed", "Arial Narrow", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    --num: "Barlow Condensed", "Arial Narrow", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    --body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--ground); }
+  body { margin: 0; font-family: var(--body); background: var(--ground); color: var(--ink); min-height: 100vh; }
+  [hidden] { display: none !important; }
+
+  .hero { background: linear-gradient(160deg, var(--board), var(--teal)); color: #fff; text-align: center;
+    padding: calc(24px + env(safe-area-inset-top, 0px)) max(20px, env(safe-area-inset-right, 0px)) 48px max(20px, env(safe-area-inset-left, 0px)); }
+  .logo { width: 72px; height: 72px; border-radius: 20px; background: #fff; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22); }
+  .logo img { width: 100%; height: 100%; object-fit: cover; }
+  .logo .ini { font-family: var(--title); font-size: 28px; font-weight: 700; color: var(--teal); }
+  .brand { font-size: 12.5px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; opacity: 0.85; }
+  .title { font-family: var(--title); font-weight: 700; font-size: 30px; line-height: 1.1; margin: 6px 0 0; text-wrap: balance; }
+
+  .wrap { max-width: 480px; margin: -30px auto 0; padding: 0 max(14px, env(safe-area-inset-right, 0px)) calc(40px + env(safe-area-inset-bottom, 0px)) max(14px, env(safe-area-inset-left, 0px)); }
+  .card { background: var(--card); border-radius: 18px; border: 1px solid var(--line); padding: 18px; box-shadow: 0 8px 24px rgba(16, 32, 38, 0.07); margin-bottom: 12px; }
+
+  .state { text-align: center; padding: 26px 8px; color: var(--sub); font-size: 15px; line-height: 1.5; }
+  .state b { display: block; color: var(--ink); font-size: 17px; margin-bottom: 4px; }
+  .spinner { width: 32px; height: 32px; border-radius: 50%; border: 3px solid var(--teal-pale); border-top-color: var(--teal); margin: 0 auto 14px; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2.4s; } }
+
+  .cap { font-size: 11px; font-weight: 800; letter-spacing: 1.6px; color: var(--sub); margin: 0 0 12px; }
+
+  /* Hat: duraklar dikey çizgiyle bağlı; geçilen yol aşamanın renginde */
+  .hat { list-style: none; margin: 0 0 6px; padding: 0; }
+  .stop { position: relative; display: flex; gap: 14px; padding-bottom: 16px; }
+  .stop:last-child { padding-bottom: 2px; }
+  .stop::before { content: ""; position: absolute; left: 12px; top: 26px; bottom: -2px; width: 3px; background: var(--line); border-radius: 2px; }
+  .stop:last-child::before { display: none; }
+  .stop.done::before { background: var(--c); }
+  .mark { flex: none; width: 27px; height: 27px; border-radius: 50%; border: 2.5px solid var(--line); background: #fff; display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; }
+  .stop.done .mark { background: var(--c); border-color: var(--c); }
+  .stop.done .mark svg { width: 14px; height: 14px; }
+  .stop.now .mark { border-color: var(--c); box-shadow: 0 0 0 5px color-mix(in srgb, var(--c) 18%, transparent); }
+  .stop.now .mark::after { content: ""; width: 11px; height: 11px; border-radius: 50%; background: var(--c); }
+  .txt { flex: 1; min-width: 0; padding-top: 3px; }
+  .lbl { font-size: 15px; font-weight: 600; color: var(--faint); }
+  .stop.done .lbl { color: var(--ink); }
+  .stop.now .lbl { font-family: var(--title); font-weight: 700; font-size: 23px; line-height: 1.1; color: var(--c); }
+  .note { font-size: 14px; color: var(--sub); line-height: 1.45; margin-top: 4px; }
+  .stop.now .note { color: var(--ink); }
+  .when { font-size: 13px; color: var(--sub); margin-top: 2px; }
+  .stop.now .when { font-weight: 700; color: var(--ink); margin-top: 6px; }
+  .here { display: inline-block; margin-left: 6px; vertical-align: 3px; font-family: var(--body); font-size: 10px; font-weight: 800; letter-spacing: 1px; color: #fff; background: var(--c); padding: 2px 7px; border-radius: 6px; }
+
+  .rows { border-top: 1px solid var(--line); margin-top: 8px; }
+  .row { display: flex; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+  .row:last-child { border-bottom: none; }
+  .row .k { color: var(--sub); }
+  .row .v { color: var(--ink); font-weight: 700; text-align: right; }
+  .row .v.num { font-family: var(--num); font-weight: 700; font-size: 18px; line-height: 1.1; }
+
+  .btn { display: flex; align-items: center; justify-content: center; gap: 9px; width: 100%; border: none; border-radius: 13px; padding: 14px; font: 800 16px var(--body); cursor: pointer; text-decoration: none; }
+  .btn svg { width: 18px; height: 18px; flex: none; }
+  .btn:focus-visible { outline: 3px solid var(--teal-pale); outline-offset: 2px; }
+  .btn-row { display: flex; gap: 10px; margin-top: 14px; }
+  .btn-row .btn { flex: 1; font-size: 15px; padding: 13px; }
+  .btn-call { background: #fff; color: var(--teal); border: 1.5px solid var(--teal); }
+  .btn-wa { background: #1fa855; color: #fff; }
+  .btn-loc { background: var(--teal); color: #fff; }
+  .btn-loc[disabled] { opacity: 0.6; }
+  .loc-title { font-family: var(--title); font-weight: 700; font-size: 20px; margin: 0 0 4px; }
+  .loc-text { font-size: 14px; color: var(--sub); margin: 0 0 14px; line-height: 1.45; }
+  .loccard.hl { border: 2px solid var(--teal); }
+  .ok { background: #ecf7f5; border: 1px solid #cfe7e2; color: var(--teal); border-radius: 13px; padding: 13px; font-weight: 800; font-size: 14.5px; text-align: center; }
+  .err { color: #b91c1c; font-size: 13px; margin-top: 10px; text-align: center; }
+  .foot { text-align: center; margin-top: 16px; font-size: 12px; color: var(--sub); }
+
+  /* Müşteri yanıtı (v7): alış / teslim günü evde olacak mı */
+  .replycard.hl { border: 2px solid var(--teal); }
+  .btn-no { background: #fff; color: #b91c1c; border: 1.5px solid #fecaca; }
+  .btn-row.ask { margin-top: 0; }
+  .ok.no { background: #fff7ed; border-color: #fed7aa; color: #9a3412; }
+
+  /* Puan (teslim edilen siparişte): 5 yıldız + isteğe bağlı yorum */
+  .ratecard.hl { border: 2px solid #f59e0b; }
+  .stars { display: flex; justify-content: center; gap: 6px; margin: 4px 0 6px; }
+  .star { width: 50px; height: 50px; border: none; background: none; padding: 4px; cursor: pointer; color: #d6dfdd; -webkit-tap-highlight-color: transparent; }
+  .star svg { width: 100%; height: 100%; fill: currentColor; display: block; }
+  .star.on { color: #f59e0b; }
+  .star:focus-visible { outline: 3px solid #fde68a; outline-offset: 1px; border-radius: 10px; }
+  .stars.static .star { width: 34px; height: 34px; padding: 2px; cursor: default; }
+  .stxt { text-align: center; font-family: var(--title); font-weight: 700; font-size: 17px; color: var(--ink); min-height: 22px; margin-bottom: 10px; }
+  .rnote { width: 100%; min-height: 72px; border: 1.5px solid var(--line); border-radius: 12px; padding: 10px 12px; font: 15px var(--body); color: var(--ink); resize: vertical; margin-bottom: 12px; }
+  .rnote:focus { outline: none; border-color: var(--teal); }
+  .quote { text-align: center; font-size: 14.5px; color: var(--sub); margin: 6px 0 12px; line-height: 1.45; }
+  /* Google yorumu: puan verildikten sonra, kaç yıldız verilirse verilsin aynı düğme */
+  .gask { text-align: center; font-size: 14.5px; color: var(--ink); margin: 4px 0 12px; line-height: 1.45; }
+  .ghint { text-align: center; font-size: 12.5px; color: var(--sub); margin: 8px 0 0; line-height: 1.4; }
+  .rate-more { margin-top: 10px; }
+  /* Havale / EFT: ödenmemiş siparişte firma hesabı (firma ayarı açıksa). Tutar yazılmaz. */
+  .acct { border-top: 1px solid var(--line); padding: 13px 0 2px; }
+  .acct:first-of-type { border-top: none; padding-top: 0; }
+  .acct .bn { font-weight: 800; font-size: 15px; color: var(--ink); }
+  .acct .hd { font-size: 13.5px; color: var(--sub); margin-top: 1px; }
+  .acct .ib { font: 700 16px ui-monospace, "SF Mono", Menlo, Consolas, monospace; color: var(--ink); letter-spacing: 0.3px; margin: 8px 0 11px; word-break: break-all; }
+
+  /* Linkten sipariş (v8): teslim edilmiş siparişte "tekrar yıkat" — gün seç, isteğe bağlı parça ve not */
+  .reqcard.hl { border: 2px solid var(--teal); }
+  .days { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 0 14px; }
+  .day { border: 1.5px solid var(--line); background: #fff; border-radius: 12px; padding: 9px 12px; text-align: left; cursor: pointer; font: inherit; color: var(--ink); -webkit-tap-highlight-color: transparent; }
+  .day .dw { display: block; font-weight: 800; font-size: 15px; }
+  .day .dn { display: block; font-size: 13px; color: var(--sub); margin-top: 1px; }
+  .day.on { background: var(--teal); border-color: var(--teal); color: #fff; }
+  .day.on .dn { color: #d5f5ef; }
+  .day:focus-visible { outline: 3px solid var(--teal-pale); outline-offset: 2px; }
+  .pcs { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; }
+  .pcs .pk { flex: 1; font-size: 14.5px; font-weight: 700; color: var(--ink); }
+  .pcs .pk small { display: block; font-weight: 400; font-size: 12.5px; color: var(--sub); margin-top: 1px; }
+  .pcs button { width: 42px; height: 42px; border-radius: 50%; border: 1.5px solid var(--line); background: #fff; font: 700 22px/1 var(--body); color: var(--teal); cursor: pointer; padding: 0; -webkit-tap-highlight-color: transparent; }
+  .pcs button:focus-visible { outline: 3px solid var(--teal-pale); outline-offset: 2px; }
+  .pcs .pn { min-width: 36px; text-align: center; font: 700 24px/1 var(--num); color: var(--ink); }
+  .pcs .pn.none { color: var(--faint); }
+  .btn-loc.next { margin-top: 12px; }
+
+  /* Firma sitesi (v9): müşteri kendi siparişini verir (siparis.html?s=KOD) + fiyat listesi */
+  .fld { display: block; margin: 0 0 12px; }
+  .fld .fl { display: block; font-size: 13.5px; font-weight: 700; color: var(--ink); margin: 0 0 6px; }
+  .fld .fl small { font-weight: 400; color: var(--sub); }
+  .fld input, .fld textarea { width: 100%; border: 1.5px solid var(--line); border-radius: 12px; padding: 12px; font: 16px var(--body); color: var(--ink); background: #fff; }
+  .fld textarea { min-height: 76px; resize: vertical; }
+  .fld input:focus, .fld textarea:focus { outline: none; border-color: var(--teal); }
+  .fld.bad input, .fld.bad textarea { border-color: #f87171; }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .btn-pin { background: #fff; color: var(--teal); border: 1.5px dashed var(--teal); padding: 11px; font-size: 14.5px; margin: -2px 0 16px; }
+  .btn-pin.on { border-style: solid; background: #ecf7f5; }
+  .sec { font-size: 13.5px; font-weight: 700; color: var(--ink); margin: 2px 0 8px; }
+  .plist { margin: 0; padding: 0; list-style: none; }
+  .plist li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+  .plist li:last-child { border-bottom: none; }
+  .plist .pv { font-family: var(--num); font-weight: 700; font-size: 19px; white-space: nowrap; }
+  .plist .pv small { font-family: var(--body); font-size: 12.5px; font-weight: 600; color: var(--sub); margin-left: 3px; }
+  .pnote { font-size: 13px; color: var(--sub); line-height: 1.45; margin: 10px 0 0; }
+  .sitelink { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--ink); }
+  .sitelink b { display: block; font-size: 15px; }
+  .sitelink span { display: block; font-size: 13px; color: var(--sub); margin-top: 2px; }
+  .sitelink .go { margin-left: auto; color: var(--teal); font: 700 26px/1 var(--body); }
+</style>
+</head>
+<body>
+  <header class="hero">
+    <div class="logo" id="logo" hidden></div>
+    <div class="brand" id="brand">Sipariş Takip</div>
+    <h1 class="title" id="htitle">Halınız nerede?</h1>
+  </header>
+  <main class="wrap">
+    <section class="card" id="card" aria-live="polite">
+      <div class="state"><div class="spinner"></div>Sorgulanıyor…</div>
+    </section>
+    <section class="card replycard" id="replycard" hidden aria-live="polite"></section>
+    <section class="card loccard" id="loccard" hidden></section>
+    <section class="card paycard" id="paycard" hidden></section>
+    <section class="card ratecard" id="ratecard" hidden></section>
+    <section class="card reqcard" id="reqcard" hidden aria-live="polite"></section>
+    <section class="card pricecard" id="pricecard" hidden></section>
+    <section class="card" id="sitelinkcard" hidden></section>
+    <p class="foot" id="foot">Bu bağlantı yalnızca bu siparişin durumunu gösterir.</p>
+  </main>
+
+<script>
+  var SUPABASE_URL = "https://hxldnojokckqgxecyxhc.supabase.co";
+  var SUPABASE_ANON_KEY = "sb_publishable_ZTqkY2ZJPKqtJo5eNycwAA_owbOKT52";
+
+  // Duraklar uygulamadaki aşama renkleriyle (constants/hat.ts Stage); "done" = geçildiyse yazılan
+  var STOPS = [
+    { key: "Teslim alınacak", now: "Alınacak", done: "Teslim alındı", c: "#d97706" },
+    { key: "Yıkamada", now: "Yıkanıyor", done: "Yıkandı", c: "#2563eb" },
+    { key: "Hazır", now: "Hazır", done: "Hazırlandı", c: "#16a34a" },
+    { key: "Teslim edilecek", now: "Teslimatta", done: "Teslimata alındı", c: "#0284c7" },
+    { key: "Araçta", now: "Yolda", done: "Yola çıktı", c: "#ea580c" },
+    { key: "Teslim edildi", now: "Teslim edildi", done: "Teslim edildi", c: "#0f766e" }
+  ];
+  // Müşteriye her aşamada ne olduğu sade dille
+  var LINES = {
+    "Teslim alınacak": "Halılarınızı belirtilen gün adresinizden alacağız.",
+    "Yıkamada": "Halılarınız tesisimizde yıkanıyor ve kurutuluyor.",
+    "Hazır": "Halılarınız hazır, paketlendi. Teslimat için sizi arayacağız.",
+    "Teslim edilecek": "Halılarınız teslimat listesinde. Teslim günü sizi arayacağız.",
+    "Araçta": "Halılarınız araçta, adresinize doğru yoldayız.",
+    "Teslim edildi": "Halılarınız teslim edildi. Bizi tercih ettiğiniz için teşekkürler!"
+  };
+  var CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  var PHONE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>';
+  var PIN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.6"/></svg>';
+
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+  var MONTHS = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+  var DAYS = ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"];
+  function fmtDate(s) {
+    if (!s) return "—";
+    var p = String(s).slice(0, 10).split("-");
+    if (p.length !== 3) return s;
+    var d = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    return Number(p[2]) + " " + (MONTHS[Number(p[1]) - 1] || "") + (isNaN(d.getTime()) ? "" : " " + DAYS[d.getDay()]);
+  }
+
+  function phoneDigits(p) {
+    var d = String(p || "").replace(/\D/g, "");
+    if (d.indexOf("0") === 0) d = "90" + d.slice(1);
+    else if (d.length === 10) d = "90" + d;
+    return d;
+  }
+
+  function rpc(name, body) {
+    return fetch(SUPABASE_URL + "/rest/v1/rpc/" + name, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY },
+      body: JSON.stringify(body),
+    }).then(function (r) { return r.json(); });
+  }
+
+  var orderId = new URLSearchParams(window.location.search).get("id");
+  var wantsLocation = new URLSearchParams(window.location.search).get("konum") === "1";
+  // Teslim mesajındaki "Bizi değerlendirin" bağlantısı (&puan=1): sayfa açılınca puan kartına kayar
+  var wantsRating = new URLSearchParams(window.location.search).get("puan") === "1";
+  // Sipariş / hazır mesajındaki "evde olup olmayacağınızı bildirin" bağlantısı (&yanit=1): yanıt kartına kayar
+  var wantsReply = new URLSearchParams(window.location.search).get("yanit") === "1";
+  // "Mahallenizdeyiz" / yıkama hatırlatması mesajındaki bağlantı (&talep=1, isteğe bağlı &gun=YYYY-AA-GG): "Tekrar yıkat"
+  // kartı en üste gelir, mesajdaki gün seçili açılır
+  var wantsRequest = new URLSearchParams(window.location.search).get("talep") === "1";
+  var wantsDay = String(new URLSearchParams(window.location.search).get("gun") || "").slice(0, 10);
+  var STAR ='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.85 6.03 6.6.73-4.92 4.47 1.38 6.5L12 17.06l-5.91 3.27 1.38-6.5L2.55 9.36l6.6-.73z"/></svg>';
+  var STAR_TEXT = ["", "Çok kötü", "Kötü", "Orta", "İyi", "Çok iyi"];
+
+  // Google yorum bağlantısı (track_order → google_yorum; firma uygulamada Firma Profili / Firmalar'a yapıştırır).
+  // Yalnız https + Google alan adı açılır; adres bölümünde yalnız sunucu adı (+ kapı) kabul edilir — uygulamadaki
+  // store/google-review isGoogleUrl ile aynı kural.
+  var GOOGLE_HOST = /(^|\.)(google\.[a-z]{2,3}(\.[a-z]{2})?|g\.page|goo\.gl|g\.co)$/i;
+  function googleReviewUrl(u) {
+    var a = /^https:\/\/([^\/?#]*)/i.exec(String(u || ""));
+    var h = a ? /^([a-z0-9.-]+)(?::\d+)?$/i.exec(a[1]) : null;
+    return h && GOOGLE_HOST.test(h[1]) ? String(u) : "";
+  }
+  var googleUrl = "";
+  // Müşterinin yazdığı yorumu panoya alır (Google'da yeniden yazmasın). Olmazsa sessizce geçilir; bağlantı yine açılır.
+  function copyText(t, done) {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(t).then(done, function () {}); return; }
+      var ta = document.createElement("textarea");
+      ta.value = t; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      var ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      if (ok) done();
+    } catch (e) {}
+  }
+
+  // Firma logosu; yoksa ya da açılamazsa firma adının baş harfleri. Yalnız https adresi kabul edilir.
+  function showLogo(url, name) {
+    var box = document.getElementById("logo");
+    function initials() {
+      var ini = String(name || "").trim().split(/\s+/).slice(0, 2).map(function (w) { return w.charAt(0); }).join("").toLocaleUpperCase("tr-TR");
+      if (!ini) { box.hidden = true; return; }
+      box.innerHTML = '<span class="ini">' + esc(ini) + '</span>';
+      box.hidden = false;
+    }
+    if (!url || !/^https:\/\//.test(url)) { initials(); return; }
+    var img = new Image();
+    img.alt = name || "Logo";
+    img.onload = function () { box.innerHTML = ""; box.appendChild(img); box.hidden = false; };
+    img.onerror = initials;
+    img.src = url;
+  }
+
+  function render(data) {
+    var card = document.getElementById("card");
+    if (!data || !data.bulundu) {
+      card.innerHTML = '<div class="state"><b>Sipariş bulunamadı</b>Bağlantı eski olabilir; lütfen firmanızla iletişime geçin.</div>';
+      return;
+    }
+    if (data.firma_adi) document.getElementById("brand").textContent = data.firma_adi;
+    showLogo(data.firma_logo, data.firma_adi);
+    googleUrl = googleReviewUrl(data.google_yorum);
+    var idx = STOPS.findIndex(function (s) { return s.key === data.durum; });
+    var delivered = data.durum === "Teslim edildi";
+
+    var hat = STOPS.map(function (s, i) {
+      // Teslim edildiyse yolculuk bitti: son durak da dolu ✓, teşekkür cümlesi altında
+      var state = i < idx || delivered ? "done" : i === idx ? "now" : "todo";
+      var label = state === "done" ? s.done : s.now;
+      var extra = delivered && i === STOPS.length - 1 ? '<div class="note">' + esc(LINES[s.key]) + '</div>' : "";
+      if (state === "now") {
+        extra = '<div class="note">' + esc(LINES[s.key] || "") + '</div>';
+        if (s.key === "Teslim alınacak" && data.alis_tarihi) extra += '<div class="when">Alış günü: ' + fmtDate(data.alis_tarihi) + '</div>';
+        else if (!delivered && data.teslim_tarihi && i <= 3) extra += '<div class="when">Tahmini teslim: ' + fmtDate(data.teslim_tarihi) + '</div>';
+        // Araçtayken tahmini varış (loadEta doldurur; süre yoksa gizli kalır)
+        if (s.key === "Araçta") extra += '<div class="when" id="eta" hidden></div>';
+      } else if (state === "todo" && s.key === "Teslim edilecek" && data.teslim_tarihi && idx === 0) {
+        // Alımdan önce teslim tahmini buradadır; sonra şu anki durakta yazar (iki kez görünmesin)
+        extra = '<div class="when">tahmini ' + fmtDate(data.teslim_tarihi) + '</div>';
+      }
+      var here = state === "now" && !delivered ? '<span class="here">HALINIZ BURADA</span>' : "";
+      return '<li class="stop ' + state + '" style="--c:' + s.c + '"' + (state === "now" ? ' aria-current="step"' : "") + '>' +
+        '<div class="mark">' + (state === "done" ? CHECK : "") + '</div>' +
+        '<div class="txt"><div class="lbl">' + esc(label) + here + '</div>' + extra + '</div></li>';
+    }).join("");
+
+    var rows = "";
+    if (data.alis_tarihi && data.durum !== "Teslim alınacak") rows += '<div class="row"><div class="k">Alış</div><div class="v">' + fmtDate(data.alis_tarihi) + '</div></div>';
+    if (data.parca) rows += '<div class="row"><div class="k">Parça</div><div class="v num">' + esc(data.parca) + ' adet</div></div>';
+    if (data.urun_ozet) rows += '<div class="row"><div class="k">Ürünler</div><div class="v">' + esc(data.urun_ozet) + '</div></div>';
+
+    var contact = "";
+    if (data.firma_tel) {
+      contact = '<div class="btn-row">' +
+        '<a class="btn btn-call" href="tel:' + esc(String(data.firma_tel).replace(/\s/g, "")) + '">' + PHONE + 'Ara</a>' +
+        '<a class="btn btn-wa" href="https://wa.me/' + phoneDigits(data.firma_tel) + '">WhatsApp</a>' +
+        '</div>';
+    }
+
+    card.innerHTML =
+      '<p class="cap">SİPARİŞİNİZİN YOLCULUĞU</p>' +
+      '<ol class="hat">' + hat + '</ol>' +
+      (rows ? '<div class="rows">' + rows + '</div>' : "") + contact;
+
+    // Müşteri yanıtı (v7, supabase/takip-yanit.sql): alış ya da teslim günü evde olacak mı. Sunucu desteklemiyorsa
+    // (yanit_destek yok) ya da ziyaret günü belli değilse kart çıkmaz.
+    // Geçmiş gün sorulmaz (gecikmiş siparişte "8 Kasım geleceğiz" olmasın — firma arar). Yıkamadaki siparişte teslim günü
+    // yalnız bugün/yarınsa sorulur (akşamdan "yarın geliyoruz"; daha ilerisi henüz tahmini)
+    var REPLY_STAGES = { "Teslim alınacak": 1, "Hazır": 1, "Teslim edilecek": 1, "Araçta": 1 };
+    var vday = String(data.ziyaret_gun || "").slice(0, 10);
+    var tmr = new Date(); tmr.setDate(tmr.getDate() + 1);
+    var stageOk = REPLY_STAGES[data.durum] || (data.durum === "Yıkamada" && vday <= ymd(tmr));
+    if (data.yanit_destek && vday && vday >= ymd(new Date()) && stageOk) renderReply(data, wantsReply);
+    else document.getElementById("replycard").hidden = true;
+
+    // Havale / EFT hesabı (sunucu yalnız firma ayarı açık + sipariş ölçülmüş ve ödenmemişse gönderir)
+    renderBank(data.banka, data.makbuz);
+
+    // Konum paylaşımı: halı alınmadan önce ya da firma özellikle istediyse (?konum=1, vurgulu). Halı alındıktan sonra
+    // adres zaten biliniyor ve kapıda konum kaydediliyor — her aşamada çıkan kart gereksiz kalabalıktı (2026-11-06).
+    if (!delivered) { if (wantsLocation || data.durum === "Teslim alınacak") renderLocation(wantsLocation); }
+    // Puan: teslim edilen siparişte (verilmişse teşekkür + yıldızlar; teslim mesajından gelindiyse vurgulu)
+    else renderRating(data.puan, data.yorum, wantsRating);
+    // Linkten sipariş: yalnız teslim edilmiş siparişte sorulur (halısı bizdeyken "tekrar yıkat" olmaz)
+    if (delivered) loadRequest(); else document.getElementById("reqcard").hidden = true;
+    if (data.durum === "Araçta") startEta(); else stopEta();
+    // Teslim edilmiş siparişte "Halınız nerede?" sorusu anlamsız (2026-11-13 kullanıcı)
+    if (data.durum === "Teslim edildi") {
+      document.getElementById("htitle").textContent = "Teşekkür ederiz";
+      document.title = "Teşekkür ederiz · Sipariş Takip";
+    }
+    loadSiteLink();
+  }
+
+  // Araçtayken tahmini varış (2026-11-08, track_vehicle — supabase/takip-arac.sql). Şoförün konumu gösterilmez, yalnız
+  // süre. Fonksiyon kurulmadıysa ya da araç konumu yoksa sessizce hiçbir şey yazılmaz. Dakikada bir tazelenir; sipariş
+  // araçtan çıktıysa (teslim edildi) sayfa yeni durumla yeniden çizilir.
+  var etaTimer = null;
+  var etaReloadAt = 0;
+  function loadEta() {
+    rpc("track_vehicle", { order_id: orderId }).then(function (r) {
+      // Araçtan çıktı: yeni durumla yeniden çiz (iki sorgu bir an çelişirse art arda yüklenmesin: en çok 30 sn'de bir)
+      if (r && r.yolda === false && Date.now() - etaReloadAt > 30000) { etaReloadAt = Date.now(); stopEta(); load(3); return; }
+      var el = document.getElementById("eta");
+      if (!el) return;
+      if (r && r.yolda && r.dakika) {
+        el.textContent = "Tahmini varış: yaklaşık " + r.dakika + " dakika";
+        el.hidden = false;
+      } else {
+        el.hidden = true;
+      }
+    }).catch(function () {});
+  }
+  function startEta() { loadEta(); if (!etaTimer) etaTimer = setInterval(loadEta, 60000); }
+  function stopEta() { if (etaTimer) { clearInterval(etaTimer); etaTimer = null; } }
+
+  // ── Müşteri yanıtı (v7) ──
+  function ymd(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+  function dayWord(s) {
+    var t = new Date();
+    if (s === ymd(t)) return "Bugün";
+    if (s === ymd(new Date(t.getFullYear(), t.getMonth(), t.getDate() + 1))) return "Yarın";
+    return fmtDate(s);
+  }
+  function renderReply(data, highlight) {
+    var box = document.getElementById("replycard");
+    var pickup = data.durum === "Teslim alınacak";
+    var day = dayWord(String(data.ziyaret_gun).slice(0, 10));
+    var title = pickup ? "Halılarınızı almaya geliyoruz" : "Halılarınızı getiriyoruz";
+    box.hidden = false;
+    box.classList.toggle("hl", !!highlight && !data.yanit);
+    if (data.yanit) {
+      box.innerHTML = '<p class="loc-title">' + esc(title) + '</p>' +
+        (data.yanit === "evde"
+          ? '<div class="ok">' + esc(day) + ' evde olacağınızı ilettiniz. Teşekkürler!</div>'
+          : '<div class="ok no">' + esc(day) + ' evde olmayacağınızı ilettiniz. Sizi arayıp uygun günü birlikte belirleyeceğiz.</div>') +
+        '<div class="btn-row"><button class="btn btn-call" id="replychange">Yanıtı değiştir</button></div>';
+      document.getElementById("replychange").onclick = function () { data.yanit = null; renderReply(data, false); };
+    } else {
+      box.innerHTML = '<p class="loc-title">' + esc(title) + '</p>' +
+        '<p class="loc-text">' + esc(day) + (pickup ? " halılarınızı almak için" : " halılarınızı teslim etmek için") +
+        ' adresinize geleceğiz. Evde olacak mısınız?</p>' +
+        '<div class="btn-row ask"><button class="btn btn-loc" id="replyyes">Evdeyim</button>' +
+        '<button class="btn btn-no" id="replyno">Evde değilim</button></div><div id="replymsg"></div>';
+      document.getElementById("replyyes").onclick = function () { sendReply(data, "evde"); };
+      document.getElementById("replyno").onclick = function () { sendReply(data, "yok"); };
+    }
+    if (highlight) box.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+  function sendReply(data, val) {
+    var yes = document.getElementById("replyyes");
+    var no = document.getElementById("replyno");
+    var msg = document.getElementById("replymsg");
+    yes.disabled = true; no.disabled = true; msg.innerHTML = "";
+    rpc("reply_order", { p_order: orderId, p_reply: val })
+      .then(function (r) {
+        if (r && r.ok) { data.yanit = val; renderReply(data, false); return; }
+        yes.disabled = false; no.disabled = false;
+        msg.innerHTML = '<div class="err">Yanıtınız kaydedilemedi. Lütfen firmayı arayın.</div>';
+      })
+      .catch(function () {
+        yes.disabled = false; no.disabled = false;
+        msg.innerHTML = '<div class="err">Bağlantı hatası, tekrar deneyin.</div>';
+      });
+  }
+
+  // ── Linkten sipariş: "Tekrar yıkat" (v8; request_info / request_order — supabase/takip-talep.sql) ──
+  // Eski müşteri telefon açmadan gün seçer; firma uygulamasına talep düşer, firma siparişe çevirir ya da arar.
+  // SQL kurulmadıysa (işlev yok) ya da firma özelliği kapattıysa kart sessizce çıkmaz. Sunucu ayrıca denetler:
+  // kara liste, açık iş, geçmiş / kapalı gün. Gün listesi sunucunun bugününden kurulur (telefonun saati yanlış olabilir).
+  var reqPlaced = false;
+  function hideRequest() { document.getElementById("reqcard").hidden = true; }
+  function loadRequest() {
+    rpc("request_info", { p_order: orderId }).then(function (r) {
+      if (!r || typeof r.destek !== "boolean") { hideRequest(); return; }
+      renderRequest(r, false);
+    }).catch(hideRequest);
+  }
+  function parseYmd(s) { var p = String(s).slice(0, 10).split("-"); return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2])); }
+  // "Yarın, 12 Kasım Perşembe" (bugün / yarın sunucunun gününe göre)
+  function dayLong(s, base) {
+    var t = ymd(base);
+    var tm = ymd(new Date(base.getFullYear(), base.getMonth(), base.getDate() + 1));
+    return (s === t ? "Bugün, " : s === tm ? "Yarın, " : "") + fmtDate(s);
+  }
+  // Seçilebilir günler: bugünden başlayarak 8 açık gün. Bugün yalnız 14.00'e kadar (sonrası yetişmez) — mesajdaki gün
+  // bugünse ya da müşterinin önceki seçimiyse yine sunulur.
+  function requestDays(info, keep) {
+    var base = /^\d{4}-\d{2}-\d{2}$/.test(String(info.bugun || "")) ? parseYmd(info.bugun) : new Date();
+    var closed = Array.isArray(info.kapali) ? info.kapali : [];
+    var out = [];
+    for (var i = 0; i < 24 && out.length < 8; i++) {
+      var d = new Date(base.getFullYear(), base.getMonth(), base.getDate() + i);
+      var s = ymd(d);
+      if (closed.indexOf(d.getDay()) >= 0) continue;
+      if (i === 0 && new Date().getHours() >= 14 && s !== wantsDay && s !== keep) continue;
+      out.push({ s: s, d: d, w: i === 0 ? "Bugün" : i === 1 ? "Yarın" : DAYS[d.getDay()] });
+    }
+    return { base: base, list: out };
+  }
+  function renderRequest(info, edit) {
+    var box = document.getElementById("reqcard");
+    var t = info.talep && typeof info.talep === "object" ? info.talep : null;
+    var base = /^\d{4}-\d{2}-\d{2}$/.test(String(info.bugun || "")) ? parseYmd(info.bugun) : new Date();
+    // Kart en üste (yolculuk kartının önüne): bağlantı talep içinse ya da müşterinin süren bir talebi / yeni siparişi
+    // varsa — sayfayı onun için açmıştır. Yoksa form en altta, puan kartından sonra durur.
+    function toTop() {
+      if (reqPlaced) return;
+      reqPlaced = true;
+      box.parentNode.insertBefore(box, document.getElementById("card"));
+    }
+    if (wantsRequest) toTop();
+    box.classList.remove("hl");
+    // 1) Açık talep var: alındı bilgisi (+ gün değiştirme)
+    if (t && t.durum === "yeni" && !edit) {
+      toTop();
+      box.hidden = false;
+      box.innerHTML = '<p class="loc-title">Talebiniz alındı</p>' +
+        '<div class="ok">' + esc(dayLong(String(t.gun).slice(0, 10), base)) + ' için alım talebiniz bize ulaştı' +
+        (t.adet ? ' (' + esc(t.adet) + ' parça)' : '') + '. Teyit için size haber vereceğiz.</div>' +
+        (info.destek ? '<div class="btn-row"><button class="btn btn-call" id="reqchange">Günü değiştir</button></div>' : '');
+      var ch = document.getElementById("reqchange");
+      if (ch) ch.onclick = function () { renderRequest(info, true); };
+      return;
+    }
+    // 2) Talep siparişe çevrildi ve o sipariş sürüyor: yeni siparişin sayfasına götür
+    if (t && t.durum === "siparis" && !info.destek) {
+      toTop();
+      box.hidden = false;
+      box.innerHTML = '<p class="loc-title">Siparişiniz oluşturuldu</p>' +
+        '<div class="ok">Talebiniz siparişe dönüştü. Teşekkür ederiz!</div>' +
+        (t.siparis ? '<a class="btn btn-loc next" href="?id=' + encodeURIComponent(t.siparis) + '">Yeni siparişi takip et</a>' : '');
+      return;
+    }
+    if (!info.destek) { box.hidden = true; return; }
+    // 3) Form: gün (zorunlu) + parça ve not (isteğe bağlı)
+    var editing = !!(edit && t);
+    var keep = editing ? String(t.gun).slice(0, 10) : "";
+    var days = requestDays(info, keep).list;
+    if (!days.length) { box.hidden = true; return; }
+    var has = function (s) { return days.some(function (x) { return x.s === s; }); };
+    var pick = keep && has(keep) ? keep : wantsDay && has(wantsDay) ? wantsDay : "";
+    var pcs = editing && t.adet ? Number(t.adet) || 0 : 0;
+    box.hidden = false;
+    box.classList.toggle("hl", wantsRequest);
+    box.innerHTML =
+      '<p class="loc-title">' + (editing ? "Günü değiştirin" : "Halılarınızı yine yıkayalım mı?") + '</p>' +
+      '<p class="loc-text">Gün seçin, halılarınızı adresinizden alalım. Aramanıza gerek yok.</p>' +
+      '<div class="days" id="reqdays" role="radiogroup" aria-label="Alış günü">' +
+        days.map(function (x) {
+          return '<button type="button" class="day" role="radio" data-d="' + x.s + '"><span class="dw">' + esc(x.w) +
+            '</span><span class="dn">' + x.d.getDate() + ' ' + MONTHS[x.d.getMonth()] + '</span></button>';
+        }).join("") +
+      '</div>' +
+      '<div class="pcs"><span class="pk">Kaç parça?<small>İsteğe bağlı</small></span>' +
+        '<button type="button" id="pcminus" aria-label="Azalt">−</button><span class="pn" id="pcn" aria-live="polite"></span>' +
+        '<button type="button" id="pcplus" aria-label="Artır">+</button></div>' +
+      '<textarea class="rnote" id="reqnote" maxlength="300" placeholder="Notunuz (isteğe bağlı): uygun saat, kat, zil…">' + esc(editing ? t.not || "" : "") + '</textarea>' +
+      '<button class="btn btn-loc" id="reqbtn"></button><div id="reqmsg"></div>';
+    var chips = box.querySelectorAll("#reqdays .day");
+    function paint() {
+      Array.prototype.forEach.call(chips, function (b) {
+        var on = b.getAttribute("data-d") === pick;
+        b.classList.toggle("on", on);
+        b.setAttribute("aria-checked", on ? "true" : "false");
+      });
+      var pn = document.getElementById("pcn");
+      pn.textContent = pcs > 0 ? String(pcs) : "—";
+      pn.classList.toggle("none", pcs <= 0);
+      var btn = document.getElementById("reqbtn");
+      btn.disabled = !pick;
+      btn.textContent = pick ? "Gönder" : "Önce gün seçin";
+    }
+    Array.prototype.forEach.call(chips, function (b) {
+      b.onclick = function () { pick = b.getAttribute("data-d"); paint(); };
+    });
+    document.getElementById("pcminus").onclick = function () { pcs = Math.max(0, pcs - 1); paint(); };
+    document.getElementById("pcplus").onclick = function () { pcs = Math.min(99, pcs + 1); paint(); };
+    paint();
+    document.getElementById("reqbtn").onclick = function () {
+      var btn = document.getElementById("reqbtn");
+      var msg = document.getElementById("reqmsg");
+      var note = document.getElementById("reqnote").value.trim();
+      if (!pick) return;
+      btn.disabled = true; btn.textContent = "Gönderiliyor…"; msg.innerHTML = "";
+      rpc("request_order", { p_order: orderId, p_day: pick, p_pieces: pcs > 0 ? pcs : null, p_note: note || null })
+        .then(function (r) {
+          if (r && r.ok) {
+            info.talep = { gun: pick, adet: pcs > 0 ? pcs : null, not: note || null, durum: "yeni", siparis: null };
+            renderRequest(info, false);
+            return;
+          }
+          btn.disabled = false; btn.textContent = "Gönder";
+          var why = r && r.hata;
+          msg.innerHTML = '<div class="err">' + (why === "kapali_gun" ? "Seçtiğiniz gün kapalıyız. Lütfen başka bir gün seçin."
+            : why === "gun" ? "Bu gün seçilemiyor. Lütfen başka bir gün seçin."
+            : "Talebiniz kaydedilemedi. Lütfen firmayı arayın.") + '</div>';
+        })
+        .catch(function () {
+          btn.disabled = false; btn.textContent = "Gönder";
+          msg.innerHTML = '<div class="err">Bağlantı hatası, tekrar deneyin.</div>';
+        });
+    };
+  }
+
+  // ── Havale / EFT (track_order → banka / makbuz; ProTakip "takip sayfasında IBAN") ──
+  // Müşteri "IBAN'ı atar mısınız" diye aramadan hesabı görür, tek dokunuşla kopyalar. Tutar burada YAZMAZ (hesap fişinde).
+  function ibanGroups(s) { return String(s || "").replace(/\s+/g, "").toUpperCase().replace(/(.{4})/g, "$1 ").trim(); }
+  function renderBank(list, receiptNo) {
+    var box = document.getElementById("paycard");
+    var rows = (Array.isArray(list) ? list : []).filter(function (a) { return a && a.iban; });
+    if (!rows.length) { box.hidden = true; return; }
+    box.hidden = false;
+    box.innerHTML =
+      '<p class="loc-title">Havale / EFT ile ödeme</p>' +
+      '<p class="loc-text">Ödemenizi aşağıdaki hesaba yapabilirsiniz.' +
+        (receiptNo ? ' Açıklamaya fiş numaranızı yazın: <b>' + esc(receiptNo) + '</b>' : '') + '</p>' +
+      rows.map(function (a, i) {
+        return '<div class="acct">' +
+          (a.banka ? '<div class="bn">' + esc(a.banka) + '</div>' : '') +
+          (a.sahip ? '<div class="hd">' + esc(a.sahip) + '</div>' : '') +
+          '<div class="ib">' + esc(ibanGroups(a.iban)) + '</div>' +
+          '<button class="btn btn-call" data-i="' + i + '">IBAN\'ı kopyala</button></div>';
+      }).join("");
+    Array.prototype.forEach.call(box.querySelectorAll("button[data-i]"), function (btn) {
+      btn.onclick = function () {
+        var a = rows[Number(btn.getAttribute("data-i"))];
+        copyText(String(a.iban).replace(/\s+/g, ""), function () {
+          btn.textContent = "Kopyalandı ✓";
+          setTimeout(function () { btn.textContent = "IBAN'ı kopyala"; }, 2500);
+        });
+      };
+    });
+  }
+
+  function starsHtml(n) {
+    var s = "";
+    for (var i = 1; i <= 5; i++) s += '<span class="star' + (i <= n ? " on" : "") + '">' + STAR + '</span>';
+    return s;
+  }
+
+  function renderRating(given, comment, highlight) {
+    var box = document.getElementById("ratecard");
+    box.hidden = false;
+    box.classList.toggle("hl", !!highlight);
+    if (given) {
+      box.innerHTML =
+        '<p class="loc-title">Değerlendirmeniz için teşekkürler</p>' +
+        '<div class="stars static" aria-label="' + given + ' yıldız">' + starsHtml(given) + '</div>' +
+        (comment ? '<p class="quote">“' + esc(comment) + '”</p>' : "") +
+        // Google'da yorum: kaç yıldız verilirse verilsin aynı düğme (yalnız memnun müşteriyi yönlendirmek Google
+        // kurallarına aykırı). Yorum yazıldıysa dokununca panoya alınır, Google'da yapıştırmak yeter.
+        (googleUrl
+          ? '<p class="gask">Görüşünüzü Google\'da da paylaşır mısınız?</p>' +
+            '<a class="btn btn-loc" id="gbtn" href="' + esc(googleUrl) + '" target="_blank" rel="noopener noreferrer">Google\'da yorum yaz</a>' +
+            (comment ? '<p class="ghint" id="ghint">Dokununca yazdığınız yorum kopyalanır; Google\'da yapıştırmanız yeterli.</p>' : "")
+          : "") +
+        '<button class="btn btn-call' + (googleUrl ? " rate-more" : "") + '" id="ratechange">' + (googleUrl ? "Puanı değiştir" : "Değiştir") + '</button>';
+      document.getElementById("ratechange").onclick = function () { ratingForm(given, comment); };
+      if (googleUrl && comment) {
+        document.getElementById("gbtn").onclick = function () {
+          copyText(comment, function () {
+            var h = document.getElementById("ghint");
+            if (h) h.textContent = "Yorumunuz kopyalandı. Google'da yapıştırabilirsiniz.";
+          });
+        };
+      }
+    } else {
+      ratingForm(0, "");
+    }
+    if (highlight) box.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  function ratingForm(cur, comment) {
+    var box = document.getElementById("ratecard");
+    var pick = cur || 0;
+    box.innerHTML =
+      '<p class="loc-title">Hizmetimizi değerlendirin</p>' +
+      '<p class="loc-text">Yıldıza dokunun; isterseniz kısa bir not da bırakın.</p>' +
+      '<div class="stars" id="stars" role="radiogroup" aria-label="Puan">' +
+        [1, 2, 3, 4, 5].map(function (n) {
+          return '<button type="button" class="star" data-n="' + n + '" role="radio" aria-label="' + n + ' yıldız">' + STAR + '</button>';
+        }).join("") +
+      '</div><div class="stxt" id="stxt"></div>' +
+      '<textarea class="rnote" id="rnote" maxlength="500" placeholder="Yorumunuz (isteğe bağlı)">' + esc(comment || "") + '</textarea>' +
+      '<button class="btn btn-loc" id="ratebtn" disabled>Gönder</button><div id="ratemsg"></div>';
+    var stars = document.querySelectorAll("#stars .star");
+    function paint() {
+      Array.prototype.forEach.call(stars, function (b) {
+        var n = Number(b.getAttribute("data-n"));
+        b.classList.toggle("on", n <= pick);
+        b.setAttribute("aria-checked", n === pick ? "true" : "false");
+      });
+      document.getElementById("stxt").textContent = STAR_TEXT[pick] || "";
+      document.getElementById("ratebtn").disabled = !pick;
+    }
+    Array.prototype.forEach.call(stars, function (b) {
+      b.onclick = function () { pick = Number(b.getAttribute("data-n")); paint(); };
+    });
+    paint();
+    document.getElementById("ratebtn").onclick = function () {
+      var btn = document.getElementById("ratebtn");
+      var msg = document.getElementById("ratemsg");
+      var note = document.getElementById("rnote").value.trim();
+      btn.disabled = true; btn.textContent = "Gönderiliyor…"; msg.innerHTML = "";
+      rpc("rate_order", { p_order: orderId, p_stars: pick, p_comment: note || null })
+        .then(function (r) {
+          if (r && r.ok) { renderRating(pick, note, false); return; }
+          btn.disabled = false; btn.textContent = "Gönder";
+          msg.innerHTML = '<div class="err">Puan kaydedilemedi. Lütfen daha sonra tekrar deneyin.</div>';
+        })
+        .catch(function () {
+          btn.disabled = false; btn.textContent = "Gönder";
+          msg.innerHTML = '<div class="err">Bağlantı hatası, tekrar deneyin.</div>';
+        });
+    };
+  }
+
+  function renderLocation(highlight) {
+    var box = document.getElementById("loccard");
+    box.hidden = false;
+    box.classList.toggle("hl", !!highlight);
+    box.innerHTML =
+      '<p class="loc-title">Adresinizi kolay bulalım</p>' +
+      '<p class="loc-text">Halıların alınacağı / teslim edileceği adresteyken aşağıdaki düğmeye basın; konumunuz yalnızca bu firmaya iletilir.</p>' +
+      '<button class="btn btn-loc" id="locbtn">' + PIN + 'Konumumu gönder</button><div id="locmsg"></div>';
+    document.getElementById("locbtn").onclick = sendLocation;
+    if (highlight) box.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  function resetLocBtn(btn) { btn.disabled = false; btn.innerHTML = PIN + "Konumumu gönder"; }
+
+  function sendLocation() {
+    var btn = document.getElementById("locbtn");
+    var msg = document.getElementById("locmsg");
+    msg.innerHTML = "";
+    if (!navigator.geolocation) { msg.innerHTML = '<div class="err">Bu tarayıcı konum paylaşamıyor.</div>'; return; }
+    btn.disabled = true; btn.textContent = "Konum alınıyor…";
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      rpc("share_order_location", { p_order_id: orderId, p_lat: pos.coords.latitude, p_lng: pos.coords.longitude, p_acc: pos.coords.accuracy || null })
+        .then(function (r) {
+          if (r && r.ok) {
+            document.getElementById("loccard").innerHTML = '<div class="ok">Konumunuz iletildi. Teşekkür ederiz!</div>';
+          } else {
+            resetLocBtn(btn);
+            msg.innerHTML = '<div class="err">Konum kaydedilemedi. Lütfen firmayı arayın.</div>';
+          }
+        })
+        .catch(function () {
+          resetLocBtn(btn);
+          msg.innerHTML = '<div class="err">Bağlantı hatası, tekrar deneyin.</div>';
+        });
+    }, function (err) {
+      resetLocBtn(btn);
+      msg.innerHTML = '<div class="err">' + (err && err.code === 1 ? "Konum izni verilmedi. Tarayıcı ayarlarından konuma izin verip tekrar deneyin." : "Konum alınamadı, tekrar deneyin.") + '</div>';
+    }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+  }
+
+  // ── Firma sitesi (v9; siparis.html?s=KOD, supabase/firma-sitesi.sql) ──
+  // Müşteri — yeni ya da eski — kendi siparişini verir, fiyatları görür. Talep firma uygulamasına düşer, uygulama onu
+  // doğrudan siparişe çevirir. Gönderilen talebin kimliği bu telefonda saklanır: yeniden açınca "alındı" / "siparişiniz
+  // oluşturuldu → takip" görünür; ad, telefon, adres sonraki siparişte hazır gelir.
+  var siteCode = String(new URLSearchParams(window.location.search).get("s") || "").trim().toUpperCase().slice(0, 12);
+  var SITE_KEY = "halitakip.site." + siteCode;
+  var sitePin = null; // "Konumumu ekle": { lat, lng }
+  function siteSaved() { try { return JSON.parse(localStorage.getItem(SITE_KEY) || "null") || {}; } catch (e) { return {}; } }
+  function siteSave(o) { try { localStorage.setItem(SITE_KEY, JSON.stringify(o)); } catch (e) {} }
+  function tlPrice(v) {
+    var n = Number(v);
+    if (!isFinite(n)) return esc(v);
+    var s = Math.round(n) === n ? String(n) : n.toFixed(2).replace(".", ",");
+    return s.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " TL";
+  }
+  var SITE_ERR = {
+    ad: function () { return "Adınızı yazın."; },
+    telefon: function () { return "Cep telefonunuzu 05xx xxx xx xx biçiminde yazın."; },
+    adres: function () { return "Adresinizi mahalle, sokak ve kapı numarasıyla yazın."; },
+    gun: function () { return "Bu gün seçilemiyor. Lütfen başka bir gün seçin."; },
+    kapali_gun: function () { return "Seçtiğiniz gün kapalıyız. Lütfen başka bir gün seçin."; },
+    acik: function (r) { return (r.gun ? fmtDate(r.gun) + " günü" : "Yakında") + " alınacak bir siparişiniz zaten var. Değiştirmek için bizi arayın."; },
+    isleniyor: function () { return "Siparişiniz şu an hazırlanıyor. Değişiklik için bizi arayın."; },
+    musteri: function () { return "Siparişinizi telefonla alalım; lütfen bizi arayın."; },
+    yogun: function () { return "Şu an çok yoğunuz; lütfen bizi arayın."; },
+    kapali: function () { return "Şu an siteden sipariş almıyoruz; lütfen bizi arayın."; },
+    tekrar: function () { return "Siparişiniz zaten gönderildi. Sayfayı yenileyip kontrol edin."; },
+    bulunamadi: function () { return "Bu bağlantı geçersiz. Lütfen firmayı arayın."; }
+  };
+  function siteCall(info) {
+    var tel = String(info.firma_tel || "").replace(/[^\d+]/g, "");
+    return tel ? '<a class="btn btn-call" href="tel:' + esc(tel) + '">' + PHONE + 'Bizi arayın</a>' : '';
+  }
+  function renderPrices(info) {
+    var box = document.getElementById("pricecard");
+    var list = Array.isArray(info.fiyatlar) ? info.fiyatlar : [];
+    if (!list.length) { box.hidden = true; return; }
+    function rows(xs) {
+      return '<ul class="plist">' + xs.map(function (p) {
+        return '<li><span>' + esc(p.ad) + '</span><span class="pv">' + tlPrice(p.fiyat) + '<small>/ ' + esc(p.birim || "adet") + '</small></span></li>';
+      }).join("") + '</ul>';
+    }
+    var main = list.filter(function (p) { return !p.hizmet; });
+    var extra = list.filter(function (p) { return p.hizmet; });
+    box.innerHTML = '<p class="loc-title">Fiyatlarımız</p>' + (main.length ? rows(main) : "") +
+      (extra.length ? '<p class="sec" style="margin-top:14px">Ek hizmetler</p>' + rows(extra) : "") +
+      '<p class="pnote">m² fiyatlı halılarda tutar, halı ölçüldükten sonra kesinleşir' + (info.bolge ? '; fiyat adresinize göre değişebilir' : '') + '.</p>';
+    box.hidden = false;
+  }
+  function renderSite(info, req, edit) {
+    var box = document.getElementById("card");
+    var base = /^\d{4}-\d{2}-\d{2}$/.test(String(info.bugun || "")) ? parseYmd(info.bugun) : new Date();
+    var saved = siteSaved();
+    if (!info.acik) {
+      box.innerHTML = '<div class="state"><b>Şu an siteden sipariş almıyoruz</b>Siparişiniz için bizi arayın.</div>' +
+        (siteCall(info) ? '<div class="btn-row">' + siteCall(info) + '</div>' : '');
+      return;
+    }
+    var day = req ? String(req.gun || "").slice(0, 10) : "";
+    // 1) Gönderilmiş, firma henüz çevirmemiş
+    if (req && req.durum === "yeni" && !edit) {
+      box.innerHTML = '<p class="loc-title">Siparişiniz alındı</p>' +
+        '<div class="ok">' + esc(dayLong(day, base)) + ' halılarınızı almaya geliyoruz' + (req.adet ? ' (' + esc(req.adet) + ' parça)' : '') + '.</div>' +
+        '<p class="pnote">Değiştirmek isterseniz günü değiştirebilir ya da bizi arayabilirsiniz.</p>' +
+        '<div class="btn-row"><button class="btn btn-call" id="sitechange">Günü değiştir</button>' + siteCall(info) + '</div>';
+      document.getElementById("sitechange").onclick = function () { renderSite(info, req, true); };
+      return;
+    }
+    // 2) Firma siparişe çevirdi: takip bağlantısı
+    if (req && req.durum === "siparis" && !edit) {
+      box.innerHTML = '<p class="loc-title">Siparişiniz oluşturuldu</p>' +
+        '<div class="ok">' + esc(dayLong(day, base)) + ' halılarınızı almaya geliyoruz. Teşekkür ederiz!</div>' +
+        (req.siparis ? '<a class="btn btn-loc next" href="./?id=' + encodeURIComponent(req.siparis) + '">Halınızı takip edin</a>' : '') +
+        '<div class="btn-row"><button class="btn btn-call" id="sitenew">Yeni sipariş ver</button></div>';
+      document.getElementById("sitenew").onclick = function () {
+        siteSave({ ad: saved.ad, tel: saved.tel, adres: saved.adres });
+        renderSite(info, null, false);
+      };
+      return;
+    }
+    // 3) Form: ad, telefon, adres (+ isteğe bağlı konum), gün, parça, not
+    var days = requestDays(info, edit ? day : "").list;
+    var has = function (s) { return days.some(function (x) { return x.s === s; }); };
+    var pick = edit && has(day) ? day : wantsDay && has(wantsDay) ? wantsDay : "";
+    var pcs = edit && req && req.adet ? Number(req.adet) || 0 : 0;
+    box.innerHTML =
+      '<p class="loc-title">' + (edit ? "Siparişinizi değiştirin" : "Halılarınızı kapınızdan alalım") + '</p>' +
+      '<p class="loc-text">Bilgilerinizi yazın, gün seçin. Siparişiniz doğrudan bize ulaşır; aramanıza gerek yok.</p>' +
+      '<label class="fld" id="f-ad"><span class="fl">Adınız soyadınız</span><input id="s-ad" autocomplete="name" maxlength="60" value="' + esc(saved.ad || "") + '"></label>' +
+      '<label class="fld" id="f-tel"><span class="fl">Cep telefonunuz</span><input id="s-tel" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="05xx xxx xx xx" value="' + esc(saved.tel || "") + '"></label>' +
+      '<label class="fld" id="f-adres"><span class="fl">Adresiniz</span><textarea id="s-adres" autocomplete="street-address" maxlength="300" placeholder="Mahalle, sokak, kapı no, daire">' + esc(saved.adres || "") + '</textarea></label>' +
+      '<button type="button" class="btn btn-pin" id="s-pin"></button>' +
+      '<p class="sec">Hangi gün alalım?</p>' +
+      '<div class="days" id="s-days" role="radiogroup" aria-label="Alış günü">' +
+        days.map(function (x) {
+          return '<button type="button" class="day" role="radio" data-d="' + x.s + '"><span class="dw">' + esc(x.w) +
+            '</span><span class="dn">' + x.d.getDate() + ' ' + MONTHS[x.d.getMonth()] + '</span></button>';
+        }).join("") +
+      '</div>' +
+      '<div class="pcs"><span class="pk">Kaç parça?<small>Bilmiyorsanız boş bırakın</small></span>' +
+        '<button type="button" id="s-minus" aria-label="Azalt">−</button><span class="pn" id="s-pcn" aria-live="polite"></span>' +
+        '<button type="button" id="s-plus" aria-label="Artır">+</button></div>' +
+      '<label class="fld"><span class="fl">Notunuz <small>(isteğe bağlı)</small></span><textarea id="s-not" maxlength="300" placeholder="Uygun saat, kat, zil, halının durumu…">' + esc(edit && req && req.not ? req.not : "") + '</textarea></label>' +
+      '<div class="hp" aria-hidden="true"><label>Web sitesi <input id="s-hp" tabindex="-1" autocomplete="off"></label></div>' +
+      '<button class="btn btn-loc" id="s-send"></button><div id="s-msg"></div>';
+    var chips = box.querySelectorAll("#s-days .day");
+    function paint() {
+      Array.prototype.forEach.call(chips, function (b) {
+        var on = b.getAttribute("data-d") === pick;
+        b.classList.toggle("on", on);
+        b.setAttribute("aria-checked", on ? "true" : "false");
+      });
+      var pn = document.getElementById("s-pcn");
+      pn.textContent = pcs > 0 ? String(pcs) : "—";
+      pn.classList.toggle("none", pcs <= 0);
+      var pin = document.getElementById("s-pin");
+      pin.classList.toggle("on", !!sitePin);
+      pin.innerHTML = PIN + (sitePin ? "Konumunuz eklendi ✓" : "Konumumu ekle (isteğe bağlı)");
+      var btn = document.getElementById("s-send");
+      btn.disabled = !pick;
+      btn.textContent = pick ? "Siparişi gönder" : "Önce gün seçin";
+    }
+    Array.prototype.forEach.call(chips, function (b) {
+      b.onclick = function () { pick = b.getAttribute("data-d"); paint(); };
+    });
+    document.getElementById("s-minus").onclick = function () { pcs = Math.max(0, pcs - 1); paint(); };
+    document.getElementById("s-plus").onclick = function () { pcs = Math.min(99, pcs + 1); paint(); };
+    document.getElementById("s-pin").onclick = function () {
+      var pin = document.getElementById("s-pin");
+      var msg = document.getElementById("s-msg");
+      if (!navigator.geolocation) { msg.innerHTML = '<div class="err">Konum alınamadı; adresi yazmanız yeterli.</div>'; return; }
+      pin.disabled = true; pin.innerHTML = PIN + "Konum alınıyor…";
+      navigator.geolocation.getCurrentPosition(function (p) {
+        sitePin = { lat: p.coords.latitude, lng: p.coords.longitude };
+        pin.disabled = false; msg.innerHTML = ""; paint();
+      }, function () {
+        pin.disabled = false; paint();
+        msg.innerHTML = '<div class="err">Konum alınamadı; adresi yazmanız yeterli.</div>';
+      }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
+    };
+    paint();
+    document.getElementById("s-send").onclick = function () {
+      var btn = document.getElementById("s-send");
+      var msg = document.getElementById("s-msg");
+      var ad = document.getElementById("s-ad").value.trim();
+      var tel = document.getElementById("s-tel").value.trim();
+      var adres = document.getElementById("s-adres").value.trim();
+      var not = document.getElementById("s-not").value.trim();
+      var hp = document.getElementById("s-hp").value;
+      var digits = tel.replace(/\D/g, "");
+      // Sunucunun kuralları önceden: yanlış alan kırmızı, ilk hatanın açıklaması altta
+      var errs = [];
+      if (ad.replace(/\s+/g, " ").length < 2) errs.push(["f-ad", "ad"]);
+      if (!/^5\d{9}$/.test(digits.slice(-10)) || digits.length > 12) errs.push(["f-tel", "telefon"]);
+      if (adres.replace(/\s+/g, " ").length < 8) errs.push(["f-adres", "adres"]);
+      ["f-ad", "f-tel", "f-adres"].forEach(function (id) {
+        document.getElementById(id).classList.toggle("bad", errs.some(function (e) { return e[0] === id; }));
+      });
+      if (errs.length) { msg.innerHTML = '<div class="err">' + esc(SITE_ERR[errs[0][1]]({})) + '</div>'; return; }
+      if (!pick) return;
+      btn.disabled = true; btn.textContent = "Gönderiliyor…"; msg.innerHTML = "";
+      rpc("site_order", {
+        p_code: siteCode, p_name: ad, p_phone: tel, p_address: adres,
+        p_lat: sitePin ? sitePin.lat : null, p_lng: sitePin ? sitePin.lng : null,
+        p_day: pick, p_pieces: pcs > 0 ? pcs : null, p_note: not || null, p_hp: hp || null
+      }).then(function (r) {
+        if (r && r.ok) {
+          siteSave({ talep: r.talep || null, ad: ad, tel: tel, adres: adres });
+          renderSite(info, { durum: "yeni", gun: pick, adet: pcs > 0 ? pcs : null, not: not || null }, false);
+          window.scrollTo(0, 0);
+          return;
+        }
+        paint();
+        var why = r && r.hata;
+        msg.innerHTML = '<div class="err">' + esc(SITE_ERR[why] ? SITE_ERR[why](r) : "Siparişiniz kaydedilemedi. Lütfen bizi arayın.") + '</div>';
+      }).catch(function () {
+        paint();
+        msg.innerHTML = '<div class="err">Bağlantı hatası, tekrar deneyin.</div>';
+      });
+    };
+  }
+  function loadSite() {
+    var card = document.getElementById("card");
+    document.getElementById("htitle").textContent = "Halı yıkama siparişi";
+    document.title = "Halı Yıkama Siparişi";
+    document.getElementById("foot").textContent = "Siparişiniz doğrudan firmaya ulaşır. Bilgileriniz yalnız siparişiniz için kullanılır.";
+    rpc("site_info", { p_code: siteCode }).then(function (info) {
+      if (!info || !info.bulundu) {
+        card.innerHTML = '<div class="state"><b>Bağlantı geçersiz</b>Lütfen firmanızdan yeni bağlantı isteyin.</div>';
+        return;
+      }
+      if (info.firma_adi) document.getElementById("brand").textContent = info.firma_adi;
+      showLogo(info.firma_logo, info.firma_adi);
+      renderPrices(info);
+      var t = siteSaved().talep;
+      if (!t) { renderSite(info, null, false); return; }
+      rpc("site_request", { p_id: t }).then(function (r) {
+        renderSite(info, r && r.bulundu && r.durum !== "red" ? r : null, false);
+      }).catch(function () { renderSite(info, null, false); });
+    }).catch(function () {
+      card.innerHTML = '<div class="state"><b>Bağlantı hatası</b>İnternetinizi kontrol edip tekrar deneyin.</div>';
+    });
+  }
+  // Takip sayfasından firmanın sitesine (fiyatlar, yeni sipariş) — firmanın kodu varsa ve firma siteyi açtıysa.
+  // Fiyat listesi kapalıysa (r.fiyat yok) bağlantı "Fiyatlarımız" demez.
+  function loadSiteLink() {
+    rpc("site_link", { p_order: orderId }).then(function (r) {
+      if (!r || !r.kod) return;
+      var box = document.getElementById("sitelinkcard");
+      box.innerHTML = '<a class="sitelink" href="./siparis.html?s=' + encodeURIComponent(r.kod) + '"><div><b>' +
+        (r.fiyat ? 'Fiyatlarımız · yeni sipariş' : 'Yeni sipariş') + '</b>' +
+        '<span>' + (r.fiyat ? 'Fiyatları görün, yeniden sipariş verin' : 'Gününüzü seçin, halılarınızı alalım') + '</span></div>' +
+        '<span class="go" aria-hidden="true">›</span></a>';
+      box.hidden = false;
+    }).catch(function () {});
+  }
+
+  // Sipariş az önce oluşturulduysa (mesaj hemen gider) sunucuya ulaşması birkaç saniye sürebilir:
+  // bulunamazsa birkaç kez daha sorulur.
+  function load(attempt) {
+    rpc("track_order", { order_id: orderId })
+      .then(function (data) {
+        if ((!data || !data.bulundu) && attempt < 3) {
+          document.getElementById("card").innerHTML = '<div class="state"><div class="spinner"></div>Sipariş bilgisi bekleniyor…</div>';
+          setTimeout(function () { load(attempt + 1); }, 4000);
+          return;
+        }
+        render(data);
+      })
+      .catch(function () {
+        document.getElementById("card").innerHTML = '<div class="state"><b>Bağlantı hatası</b>İnternetinizi kontrol edip tekrar deneyin.</div>';
+      });
+  }
+
+  if (siteCode && !orderId) loadSite();
+  else if (!orderId) render(null);
+  else load(0);
+</script>
+</body>
+</html>
