@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="robots" content="noindex" />
-<!-- v10 (2026-11-13): silinen / iptal edilen siparişin bağlantısı hata ya da "bekleniyor" demez → "Bu sipariş kapatıldı" + firmanın sipariş formu (order_gone). v9 (2026-11-13): firma sitesi — siparis.html?s=KOD ile müşteri (yeni ya da eski) kendi siparişini verir, fiyatları görür; takip sayfasından siteye bağlantı. Aynı sayfa üç dosya olarak yayınlanır (index / tesekkur / siparis — yalnız önizleme başlığı ve kapağı farklı; scripts/make-tracking-bundle.cjs). v8: "Tekrar yıkat" kartı. v7: müşteri yanıtı kartı + "Google'da yorum yaz" + havale/EFT hesabı. Uygulama bu işaretlerle sayfanın neyi desteklediğini anlar (store/order-replies, store/order-requests) -->
+<!-- v11 (2026-11-13): "Siparişlerim" — müşteri elindeki herhangi bir sipariş bağlantısından / siteden önceki siparişlerini görür (customer_orders; tutar, adres, telefon yok); ad, telefon, adres ve konum bu telefonda bütün firma siteleri için ortak hatırlanır ("Unut" ile silinir). v10 (2026-11-13): silinen / iptal edilen siparişin bağlantısı hata ya da "bekleniyor" demez → "Bu sipariş kapatıldı" + firmanın sipariş formu (order_gone). v9 (2026-11-13): firma sitesi — siparis.html?s=KOD ile müşteri (yeni ya da eski) kendi siparişini verir, fiyatları görür; takip sayfasından siteye bağlantı. Aynı sayfa üç dosya olarak yayınlanır (index / tesekkur / siparis — yalnız önizleme başlığı ve kapağı farklı; scripts/make-tracking-bundle.cjs). v8: "Tekrar yıkat" kartı. v7: müşteri yanıtı kartı + "Google'da yorum yaz" + havale/EFT hesabı. Uygulama bu işaretlerle sayfanın neyi desteklediğini anlar (store/order-replies, store/order-requests) -->
 <meta name="takip-yanit" content="1" />
 <meta name="takip-talep" content="1" />
 <meta name="site-siparis" content="1" />
@@ -60,6 +60,16 @@
   .state { text-align: center; padding: 26px 8px; color: var(--sub); font-size: 15px; line-height: 1.5; }
   .state b { display: block; color: var(--ink); font-size: 17px; margin-bottom: 4px; }
   .state.gone { padding: 12px 6px; }
+  .mine { list-style: none; margin: 6px 0 0; padding: 0; }
+  .mine li + li { border-top: 1px solid #e5ecea; }
+  .mine a { display: flex; align-items: center; gap: 12px; padding: 12px 2px; color: inherit; text-decoration: none; }
+  .mine .mno { min-width: 54px; text-align: center; font: 700 15px/1 var(--title); color: var(--ink); background: #f1f5f4; border-radius: 10px; padding: 9px 6px; }
+  .mine .mt { flex: 1; min-width: 0; }
+  .mine .mt b { display: block; font-size: 15px; color: var(--ink); }
+  .mine .mt span { display: block; font-size: 13px; color: var(--sub); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mine .dot { display: inline-block; width: 8px; height: 8px; border-radius: 4px; margin-right: 7px; vertical-align: 1px; }
+  .mine .go { color: var(--teal); font: 700 22px/1 var(--body); }
+  .forget { color: var(--teal); font-weight: 700; text-decoration: none; }
   .spinner { width: 32px; height: 32px; border-radius: 50%; border: 3px solid var(--teal-pale); border-top-color: var(--teal); margin: 0 auto 14px; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2.4s; } }
@@ -198,9 +208,10 @@
     <section class="card paycard" id="paycard" hidden></section>
     <section class="card ratecard" id="ratecard" hidden></section>
     <section class="card reqcard" id="reqcard" hidden aria-live="polite"></section>
+    <section class="card" id="mycard" hidden></section>
     <section class="card pricecard" id="pricecard" hidden></section>
     <section class="card" id="sitelinkcard" hidden></section>
-    <p class="foot" id="foot">Bu bağlantı yalnızca bu siparişin durumunu gösterir.</p>
+    <p class="foot" id="foot">Bu bağlantı size özeldir; siparişlerinizin durumunu gösterir.</p>
   </main>
 
 <script>
@@ -388,6 +399,9 @@
       document.title = "Teşekkür ederiz · Sipariş Takip";
     }
     loadSiteLink();
+    // Siparişlerim (v11): bu telefon siparişi hatırlar; müşterinin öbür siparişleri altta
+    rememberOrder(orderId);
+    loadMine([orderId], null, orderId, "Diğer siparişleriniz");
   }
 
   // Araçtayken tahmini varış (2026-11-08, track_vehicle — supabase/takip-arac.sql). Şoförün konumu gösterilmez, yalnız
@@ -763,6 +777,55 @@
   var sitePin = null; // "Konumumu ekle": { lat, lng }
   function siteSaved() { try { return JSON.parse(localStorage.getItem(SITE_KEY) || "null") || {}; } catch (e) { return {}; } }
   function siteSave(o) { try { localStorage.setItem(SITE_KEY, JSON.stringify(o)); } catch (e) {} }
+  // Müşterinin kendi bilgileri BU TELEFONDA, bütün firma / marka siteleri için ortak (v11): ad, telefon, adres, konum.
+  // Sunucuya telefonla SORULMAZ (başkasının numarasını yazan onun adresini görürdü). v9–v10 firma koduna göre tutuyordu.
+  var KISI_KEY = "halitakip.kisi";
+  function kisi() { try { return JSON.parse(localStorage.getItem(KISI_KEY) || "null") || {}; } catch (e) { return {}; } }
+  function kisiSave(o) { try { localStorage.setItem(KISI_KEY, JSON.stringify(o)); } catch (e) {} }
+  // Bu telefonda görülen siparişler (takip bağlantısı açıldı / siteden verildi): "Siparişlerim" bunlardan biriyle sorulur
+  var SIP_KEY = "halitakip.siparisler";
+  function knownOrders() {
+    try {
+      var a = JSON.parse(localStorage.getItem(SIP_KEY) || "[]");
+      return Array.isArray(a) ? a.filter(function (x) { return typeof x === "string" && x; }) : [];
+    } catch (e) { return []; }
+  }
+  function rememberOrder(id) {
+    if (!id) return;
+    var a = knownOrders().filter(function (x) { return x !== id; });
+    a.unshift(String(id));
+    try { localStorage.setItem(SIP_KEY, JSON.stringify(a.slice(0, 10))); } catch (e) {}
+  }
+  // "Siparişlerim" (customer_orders, v11): müşterinin bu firmadaki siparişleri — durum, gün, ürünler (tutar yok).
+  // Takip sayfasında "Diğer siparişleriniz" (açılan sipariş hariç), firma sitesinde "Siparişlerim".
+  function stopOf(k) {
+    for (var i = 0; i < STOPS.length; i++) if (STOPS[i].key === k) return STOPS[i];
+    return { now: k || "", c: "#64748b" };
+  }
+  function renderMine(list, title) {
+    var box = document.getElementById("mycard");
+    if (!list.length) { box.hidden = true; return; }
+    box.innerHTML = '<p class="loc-title">' + esc(title) + '</p><ul class="mine">' + list.slice(0, 8).map(function (x) {
+      var st = stopOf(x.durum);
+      var when = x.teslim ? "Teslim: " + fmtDate(x.teslim) : x.alis ? "Alış: " + fmtDate(x.alis) : "";
+      var what = x.urun || (x.parca ? x.parca + " parça" : "");
+      return '<li><a href="./?id=' + encodeURIComponent(x.id) + '"><span class="mno">' + (x.no ? "#" + esc(x.no) : "—") + '</span>' +
+        '<span class="mt"><b><i class="dot" style="background:' + st.c + '"></i>' + esc(st.now) + '</b>' +
+        '<span>' + esc([when, what].filter(Boolean).join(" · ")) + '</span></span><span class="go" aria-hidden="true">›</span></a></li>';
+    }).join("") + '</ul>';
+    box.hidden = false;
+  }
+  function loadMine(ids, code, exclude, title) {
+    var tries = ids.slice(0, 3);
+    (function next() {
+      var id = tries.shift();
+      if (!id) return;
+      rpc("customer_orders", { p_order: id, p_code: code || null }).then(function (r) {
+        if (!r || !r.bulundu || !Array.isArray(r.siparisler)) { next(); return; }
+        renderMine(r.siparisler.filter(function (x) { return x && x.id && x.id !== exclude; }), title);
+      }).catch(function () {});
+    })();
+  }
   function tlPrice(v) {
     var n = Number(v);
     if (!isFinite(n)) return esc(v);
@@ -807,6 +870,9 @@
     var box = document.getElementById("card");
     var base = /^\d{4}-\d{2}-\d{2}$/.test(String(info.bugun || "")) ? parseYmd(info.bugun) : new Date();
     var saved = siteSaved();
+    // Kişi bilgileri telefonda ortak (v11); v9–v10'un firma koduna göre kaydettiği bir kez taşınır
+    var me = kisi();
+    if (!me.ad && saved.ad) { me = { ad: saved.ad, tel: saved.tel, adres: saved.adres }; kisiSave(me); }
     if (!info.acik) {
       box.innerHTML = '<div class="state"><b>Şu an siteden sipariş almıyoruz</b>Siparişiniz için bizi arayın.</div>' +
         (siteCall(info) ? '<div class="btn-row">' + siteCall(info) + '</div>' : '');
@@ -824,12 +890,13 @@
     }
     // 2) Firma siparişe çevirdi: takip bağlantısı
     if (req && req.durum === "siparis" && !edit) {
+      if (req.siparis) rememberOrder(req.siparis);
       box.innerHTML = '<p class="loc-title">Siparişiniz oluşturuldu</p>' +
         '<div class="ok">' + esc(dayLong(day, base)) + ' halılarınızı almaya geliyoruz. Teşekkür ederiz!</div>' +
         (req.siparis ? '<a class="btn btn-loc next" href="./?id=' + encodeURIComponent(req.siparis) + '">Halınızı takip edin</a>' : '') +
         '<div class="btn-row"><button class="btn btn-call" id="sitenew">Yeni sipariş ver</button></div>';
       document.getElementById("sitenew").onclick = function () {
-        siteSave({ ad: saved.ad, tel: saved.tel, adres: saved.adres });
+        siteSave({});
         renderSite(info, null, false);
       };
       return;
@@ -839,12 +906,16 @@
     var has = function (s) { return days.some(function (x) { return x.s === s; }); };
     var pick = edit && has(day) ? day : wantsDay && has(wantsDay) ? wantsDay : "";
     var pcs = edit && req && req.adet ? Number(req.adet) || 0 : 0;
+    // Önceki siparişin konumu: adres aynı kaldıkça kendiliğinden eklenir; adres değişirse düşer (başka adrese sipariş)
+    if (!sitePin && me.adres && isFinite(me.lat) && isFinite(me.lng) && me.lat !== null && me.lng !== null) {
+      sitePin = { lat: Number(me.lat), lng: Number(me.lng), eski: true };
+    }
     box.innerHTML =
       '<p class="loc-title">' + (edit ? "Siparişinizi değiştirin" : "Halılarınızı kapınızdan alalım") + '</p>' +
       '<p class="loc-text">Bilgilerinizi yazın, gün seçin. Siparişiniz doğrudan bize ulaşır; aramanıza gerek yok.</p>' +
-      '<label class="fld" id="f-ad"><span class="fl">Adınız soyadınız</span><input id="s-ad" autocomplete="name" maxlength="60" value="' + esc(saved.ad || "") + '"></label>' +
-      '<label class="fld" id="f-tel"><span class="fl">Cep telefonunuz</span><input id="s-tel" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="05xx xxx xx xx" value="' + esc(saved.tel || "") + '"></label>' +
-      '<label class="fld" id="f-adres"><span class="fl">Adresiniz</span><textarea id="s-adres" autocomplete="street-address" maxlength="300" placeholder="Mahalle, sokak, kapı no, daire">' + esc(saved.adres || "") + '</textarea></label>' +
+      '<label class="fld" id="f-ad"><span class="fl">Adınız soyadınız</span><input id="s-ad" autocomplete="name" maxlength="60" value="' + esc(me.ad || "") + '"></label>' +
+      '<label class="fld" id="f-tel"><span class="fl">Cep telefonunuz</span><input id="s-tel" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="05xx xxx xx xx" value="' + esc(me.tel || "") + '"></label>' +
+      '<label class="fld" id="f-adres"><span class="fl">Adresiniz</span><textarea id="s-adres" autocomplete="street-address" maxlength="300" placeholder="Mahalle, sokak, kapı no, daire">' + esc(me.adres || "") + '</textarea></label>' +
       '<button type="button" class="btn btn-pin" id="s-pin"></button>' +
       '<p class="sec">Hangi gün alalım?</p>' +
       '<div class="days" id="s-days" role="radiogroup" aria-label="Alış günü">' +
@@ -858,7 +929,8 @@
         '<button type="button" id="s-plus" aria-label="Artır">+</button></div>' +
       '<label class="fld"><span class="fl">Notunuz <small>(isteğe bağlı)</small></span><textarea id="s-not" maxlength="300" placeholder="Uygun saat, kat, zil, halının durumu…">' + esc(edit && req && req.not ? req.not : "") + '</textarea></label>' +
       '<div class="hp" aria-hidden="true"><label>Web sitesi <input id="s-hp" tabindex="-1" autocomplete="off"></label></div>' +
-      '<button class="btn btn-loc" id="s-send"></button><div id="s-msg"></div>';
+      '<button class="btn btn-loc" id="s-send"></button><div id="s-msg"></div>' +
+      (me.ad ? '<p class="pnote">Bilgileriniz bir dahaki sipariş için bu telefonda hatırlanır. <a href="#" class="forget" id="s-forget">Unut</a></p>' : '');
     var chips = box.querySelectorAll("#s-days .day");
     function paint() {
       Array.prototype.forEach.call(chips, function (b) {
@@ -871,7 +943,7 @@
       pn.classList.toggle("none", pcs <= 0);
       var pin = document.getElementById("s-pin");
       pin.classList.toggle("on", !!sitePin);
-      pin.innerHTML = PIN + (sitePin ? "Konumunuz eklendi ✓" : "Konumumu ekle (isteğe bağlı)");
+      pin.innerHTML = PIN + (sitePin ? (sitePin.eski ? "Önceki konumunuz eklendi ✓" : "Konumunuz eklendi ✓") : "Konumumu ekle (isteğe bağlı)");
       var btn = document.getElementById("s-send");
       btn.disabled = !pick;
       btn.textContent = pick ? "Siparişi gönder" : "Önce gün seçin";
@@ -894,6 +966,19 @@
         msg.innerHTML = '<div class="err">Konum alınamadı; adresi yazmanız yeterli.</div>';
       }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
     };
+    // Adres değişince önceki siparişin konumu düşer (başka adrese sipariş: şoför eski kapıya gitmesin)
+    document.getElementById("s-adres").oninput = function () {
+      if (sitePin && sitePin.eski && this.value.trim() !== String(me.adres || "").trim()) { sitePin = null; paint(); }
+    };
+    var forget = document.getElementById("s-forget");
+    if (forget) forget.onclick = function (e) {
+      e.preventDefault();
+      try { localStorage.removeItem(KISI_KEY); localStorage.removeItem(SIP_KEY); } catch (x) {}
+      siteSave({});
+      sitePin = null;
+      document.getElementById("mycard").hidden = true;
+      renderSite(info, null, false);
+    };
     paint();
     document.getElementById("s-send").onclick = function () {
       var btn = document.getElementById("s-send");
@@ -914,6 +999,7 @@
       });
       if (errs.length) { msg.innerHTML = '<div class="err">' + esc(SITE_ERR[errs[0][1]]({})) + '</div>'; return; }
       if (!pick) return;
+      if (sitePin && sitePin.eski && adres !== String(me.adres || "").trim()) sitePin = null;
       btn.disabled = true; btn.textContent = "Gönderiliyor…"; msg.innerHTML = "";
       rpc("site_order", {
         p_code: siteCode, p_name: ad, p_phone: tel, p_address: adres,
@@ -921,7 +1007,9 @@
         p_day: pick, p_pieces: pcs > 0 ? pcs : null, p_note: not || null, p_hp: hp || null
       }).then(function (r) {
         if (r && r.ok) {
-          siteSave({ talep: r.talep || null, ad: ad, tel: tel, adres: adres });
+          siteSave({ talep: r.talep || null });
+          kisiSave({ ad: ad, tel: tel, adres: adres, lat: sitePin ? sitePin.lat : null, lng: sitePin ? sitePin.lng : null });
+          me = kisi();
           renderSite(info, { durum: "yeni", gun: pick, adet: pcs > 0 ? pcs : null, not: not || null }, false);
           window.scrollTo(0, 0);
           return;
@@ -948,6 +1036,8 @@
       if (info.firma_adi) document.getElementById("brand").textContent = info.firma_adi;
       showLogo(info.firma_logo, info.firma_adi);
       renderPrices(info);
+      // Siparişlerim (v11): bu telefonun bildiği siparişlerden biri bu firmanınsa müşterinin siparişleri
+      loadMine(knownOrders(), siteCode, null, "Siparişlerim");
       var t = siteSaved().talep;
       if (!t) { renderSite(info, null, false); return; }
       rpc("site_request", { p_id: t }).then(function (r) {
