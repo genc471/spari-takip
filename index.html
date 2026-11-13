@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="robots" content="noindex" />
-<!-- v9 (2026-11-13): firma sitesi — siparis.html?s=KOD ile müşteri (yeni ya da eski) kendi siparişini verir, fiyatları görür; takip sayfasından siteye bağlantı. Aynı sayfa üç dosya olarak yayınlanır (index / tesekkur / siparis — yalnız önizleme başlığı ve kapağı farklı; scripts/make-tracking-bundle.cjs). v8: "Tekrar yıkat" kartı. v7: müşteri yanıtı kartı + "Google'da yorum yaz" + havale/EFT hesabı. Uygulama bu işaretlerle sayfanın neyi desteklediğini anlar (store/order-replies, store/order-requests) -->
+<!-- v10 (2026-11-13): silinen / iptal edilen siparişin bağlantısı hata ya da "bekleniyor" demez → "Bu sipariş kapatıldı" + firmanın sipariş formu (order_gone). v9 (2026-11-13): firma sitesi — siparis.html?s=KOD ile müşteri (yeni ya da eski) kendi siparişini verir, fiyatları görür; takip sayfasından siteye bağlantı. Aynı sayfa üç dosya olarak yayınlanır (index / tesekkur / siparis — yalnız önizleme başlığı ve kapağı farklı; scripts/make-tracking-bundle.cjs). v8: "Tekrar yıkat" kartı. v7: müşteri yanıtı kartı + "Google'da yorum yaz" + havale/EFT hesabı. Uygulama bu işaretlerle sayfanın neyi desteklediğini anlar (store/order-replies, store/order-requests) -->
 <meta name="takip-yanit" content="1" />
 <meta name="takip-talep" content="1" />
 <meta name="site-siparis" content="1" />
@@ -59,6 +59,7 @@
 
   .state { text-align: center; padding: 26px 8px; color: var(--sub); font-size: 15px; line-height: 1.5; }
   .state b { display: block; color: var(--ink); font-size: 17px; margin-bottom: 4px; }
+  .state.gone { padding: 12px 6px; }
   .spinner { width: 32px; height: 32px; border-radius: 50%; border: 3px solid var(--teal-pale); border-top-color: var(--teal); margin: 0 auto 14px; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 2.4s; } }
@@ -188,6 +189,7 @@
     <h1 class="title" id="htitle">Halınız nerede?</h1>
   </header>
   <main class="wrap">
+    <section class="card" id="gonecard" hidden aria-live="polite"></section>
     <section class="card" id="card" aria-live="polite">
       <div class="state"><div class="spinner"></div>Sorgulanıyor…</div>
     </section>
@@ -310,7 +312,7 @@
   function render(data) {
     var card = document.getElementById("card");
     if (!data || !data.bulundu) {
-      card.innerHTML = '<div class="state"><b>Sipariş bulunamadı</b>Bağlantı eski olabilir; lütfen firmanızla iletişime geçin.</div>';
+      card.innerHTML = '<div class="state"><b>Sipariş bulunamadı</b>Bağlantı eski olabilir. Yeni sipariş için lütfen firmanızı arayın ya da WhatsApp\'tan yazın.</div>';
       return;
     }
     if (data.firma_adi) document.getElementById("brand").textContent = data.firma_adi;
@@ -969,17 +971,49 @@
     }).catch(function () {});
   }
 
-  // Sipariş az önce oluşturulduysa (mesaj hemen gider) sunucuya ulaşması birkaç saniye sürebilir:
-  // bulunamazsa birkaç kez daha sorulur.
+  // Silinen / iptal edilen sipariş (order_gone, v10): hata ya da "bekleniyor" yerine kısa not + firmanın sipariş formu
+  // (site açıksa aynı sayfada); site kapalıysa ara / WhatsApp. Kullanıcı 13 Kasım: "programdan sipariş silinse dahi
+  // hata vermesin, linke tıklayınca en azından sipariş oluştur desin".
+  function renderGone(g) {
+    if (g.firma_adi) document.getElementById("brand").textContent = g.firma_adi;
+    showLogo(g.firma_logo, g.firma_adi);
+    var what = g.iptal ? "Bu sipariş iptal edildi" : "Bu sipariş kapatıldı";
+    var note = document.getElementById("gonecard");
+    if (g.kod) {
+      note.innerHTML = '<div class="state gone"><b>' + what + '</b>Yeni sipariş vermek için aşağıdan gününüzü seçin; halılarınızı alalım.</div>';
+      note.hidden = false;
+      siteCode = String(g.kod).toUpperCase();
+      SITE_KEY = "halitakip.site." + siteCode;
+      loadSite();
+      return;
+    }
+    note.hidden = true;
+    document.getElementById("htitle").textContent = "Yeni sipariş";
+    document.title = "Yeni sipariş · Sipariş Takip";
+    var tel = phoneDigits(g.firma_tel);
+    document.getElementById("card").innerHTML = '<div class="state"><b>' + what + '</b>Yeni sipariş için bizi arayın ya da WhatsApp\'tan yazın.</div>' +
+      (tel ? '<div class="btn-row">' + siteCall(g) + '<a class="btn btn-wa" href="https://wa.me/' + tel + '?text=' +
+        encodeURIComponent("Merhaba, halı yıkama siparişi vermek istiyorum.") + '">WhatsApp</a></div>' : '');
+    document.getElementById("foot").textContent = "";
+  }
+
+  // Sipariş az önce oluşturulduysa (mesaj hemen gider) sunucuya ulaşması birkaç saniye sürebilir: bulunamazsa önce
+  // silinmiş / iptal edilmiş mi diye bakılır (öyleyse beklemeden yeni sipariş), değilse birkaç kez daha sorulur.
   function load(attempt) {
     rpc("track_order", { order_id: orderId })
       .then(function (data) {
-        if ((!data || !data.bulundu) && attempt < 3) {
-          document.getElementById("card").innerHTML = '<div class="state"><div class="spinner"></div>Sipariş bilgisi bekleniyor…</div>';
-          setTimeout(function () { load(attempt + 1); }, 4000);
-          return;
-        }
-        render(data);
+        if (data && data.bulundu) { render(data); return; }
+        return rpc("order_gone", { p_order: orderId })
+          .then(function (g) { return g; }, function () { return null; })
+          .then(function (g) {
+            if (g && g.silindi) { renderGone(g); return; }
+            if (attempt < 3) {
+              document.getElementById("card").innerHTML = '<div class="state"><div class="spinner"></div>Sipariş bilgisi bekleniyor…</div>';
+              setTimeout(function () { load(attempt + 1); }, 4000);
+              return;
+            }
+            render(data);
+          });
       })
       .catch(function () {
         document.getElementById("card").innerHTML = '<div class="state"><b>Bağlantı hatası</b>İnternetinizi kontrol edip tekrar deneyin.</div>';
