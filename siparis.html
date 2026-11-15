@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="robots" content="noindex" />
-<!-- v14 (2026-11-15): link = kimlik — müşteri bağlantısından hiçbir şey yazmadan sipariş verir: "Sipariş ver" her aşamadaki siparişte gün seçtirir (bekleyen alımı varsa WhatsApp'tan ekleme), talep uygulamada kendiliğinden siparişe döner (talep.oto); sipariş formu (siparis.html?s=KOD) bu telefonun daha önce açtığı bağlantılardan müşteriyi tanır ("Hoş geldiniz", site_known) — ad / telefon / adres sayfaya hiç gelmez. Kullanıcı: "müşteriye link gidiyor, tıkladığında bilgileri kayıtlı olsun; link üzerinden girmeyenler bilgi girsin". v13 (2026-11-15): sayfa yalnız takip değil, işe yarar — üstte hızlı düğmeler (Sipariş ver · Ara · WhatsApp; "Sipariş ver" duruma göre "Tekrar yıkat" kartına, firmanın sipariş formuna ya da WhatsApp'a gider), takip sayfasında fiyat listesi (ilk kalemler + "Tüm fiyatlar"), teslimden sonra "Komşunuza önerin" (paylaş) ve halı bakım önerileri. Kullanıcı: "sipariş ver kısmı altta kalıyor, fark edilmiyor; üst satırlara". v12 (2026-11-14): firmalar karışmaz — müşterinin ad / telefon / adres / konumu bu telefonda FİRMA KODUNA GÖRE ayrı hatırlanır (v11'in ortak kaydı silinir); "Siparişlerim" başka firmanın siparişleri araya girse de 10 kimliğe kadar dener. Sayfa firmaların kendi alan adından da açılabilir (/takip/ yükleyici, store/tracking siteBase). v11 (2026-11-13): "Siparişlerim" — müşteri elindeki herhangi bir sipariş bağlantısından / siteden önceki siparişlerini görür (customer_orders; tutar, adres, telefon yok); ad, telefon, adres ve konum bu telefonda bütün firma siteleri için ortak hatırlanır ("Unut" ile silinir). v10 (2026-11-13): silinen / iptal edilen siparişin bağlantısı hata ya da "bekleniyor" demez → "Bu sipariş kapatıldı" + firmanın sipariş formu (order_gone). v9 (2026-11-13): firma sitesi — siparis.html?s=KOD ile müşteri (yeni ya da eski) kendi siparişini verir, fiyatları görür; takip sayfasından siteye bağlantı. Aynı sayfa üç dosya olarak yayınlanır (index / tesekkur / siparis — yalnız önizleme başlığı ve kapağı farklı; scripts/make-tracking-bundle.cjs). v8: "Tekrar yıkat" kartı. v7: müşteri yanıtı kartı + "Google'da yorum yaz" + havale/EFT hesabı. Uygulama bu işaretlerle sayfanın neyi desteklediğini anlar (store/order-replies, store/order-requests) -->
+<!-- v14 (2026-11-15): link = kimlik — müşteri bağlantısından hiçbir şey yazmadan sipariş verir: "Sipariş ver" her aşamadaki siparişte gün seçtirir (bekleyen alımı varsa WhatsApp'tan ekleme), talep uygulamada kendiliğinden siparişe döner (talep.oto); sipariş formu (siparis.html?s=KOD) bu telefonun daha önce açtığı bağlantılardan müşteriyi tanır ("Hoş geldiniz", site_known) — ad / telefon / adres sayfaya hiç gelmez. Kullanıcı: "müşteriye link gidiyor, tıkladığında bilgileri kayıtlı olsun; link üzerinden girmeyenler bilgi girsin". Alttan çıkan "Halınız hazır olunca haber verelim mi?" penceresi (takip bağlantısında, formda sipariş verince; "Şimdi değil" → 7 gün): önce bizim penceremiz, "Evet"e dokununca tarayıcının izin penceresi. v13 (2026-11-15): sayfa yalnız takip değil, işe yarar — üstte hızlı düğmeler (Sipariş ver · Ara · WhatsApp; "Sipariş ver" duruma göre "Tekrar yıkat" kartına, firmanın sipariş formuna ya da WhatsApp'a gider), takip sayfasında fiyat listesi (ilk kalemler + "Tüm fiyatlar"), teslimden sonra "Komşunuza önerin" (paylaş) ve halı bakım önerileri. Kullanıcı: "sipariş ver kısmı altta kalıyor, fark edilmiyor; üst satırlara". v12 (2026-11-14): firmalar karışmaz — müşterinin ad / telefon / adres / konumu bu telefonda FİRMA KODUNA GÖRE ayrı hatırlanır (v11'in ortak kaydı silinir); "Siparişlerim" başka firmanın siparişleri araya girse de 10 kimliğe kadar dener. Sayfa firmaların kendi alan adından da açılabilir (/takip/ yükleyici, store/tracking siteBase). v11 (2026-11-13): "Siparişlerim" — müşteri elindeki herhangi bir sipariş bağlantısından / siteden önceki siparişlerini görür (customer_orders; tutar, adres, telefon yok); ad, telefon, adres ve konum bu telefonda bütün firma siteleri için ortak hatırlanır ("Unut" ile silinir). v10 (2026-11-13): silinen / iptal edilen siparişin bağlantısı hata ya da "bekleniyor" demez → "Bu sipariş kapatıldı" + firmanın sipariş formu (order_gone). v9 (2026-11-13): firma sitesi — siparis.html?s=KOD ile müşteri (yeni ya da eski) kendi siparişini verir, fiyatları görür; takip sayfasından siteye bağlantı. Aynı sayfa üç dosya olarak yayınlanır (index / tesekkur / siparis — yalnız önizleme başlığı ve kapağı farklı; scripts/make-tracking-bundle.cjs). v8: "Tekrar yıkat" kartı. v7: müşteri yanıtı kartı + "Google'da yorum yaz" + havale/EFT hesabı. Uygulama bu işaretlerle sayfanın neyi desteklediğini anlar (store/order-replies, store/order-requests) -->
 <meta name="takip-yanit" content="1" />
 <meta name="takip-talep" content="1" />
 <meta name="site-siparis" content="1" />
@@ -221,6 +221,19 @@
   .pushon span { display: block; font-size: 13px; color: var(--sub); margin-top: 2px; line-height: 1.4; }
   .linkbtn { border: none; background: none; color: var(--teal); font: 800 14px var(--body); padding: 8px 4px; cursor: pointer; }
   .card.slim { padding: 14px 16px; }
+  /* v14 alttan çıkan "Haber verelim mi?" (önce bizim penceremiz, "Evet"e dokununca tarayıcınınki) */
+  .psheet { position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 60; max-width: 520px; margin: 0 auto;
+    background: #fff; border-radius: 18px; padding: 16px; box-shadow: 0 18px 50px -12px rgba(16, 32, 38, .5); transform: translateY(160%); transition: transform .35s ease; }
+  .psheet.on { transform: none; }
+  .psheet .ph { display: flex; gap: 12px; align-items: flex-start; }
+  .psheet .ph > svg { flex: none; width: 38px; height: 38px; padding: 8px; border-radius: 12px; color: var(--teal); background: #e6f4f2; }
+  .psheet b { display: block; font-size: 16px; line-height: 1.3; color: var(--ink); }
+  .psheet span { display: block; font-size: 13.5px; line-height: 1.4; color: var(--sub); margin-top: 3px; }
+  .psheet .pr { display: flex; gap: 8px; margin-top: 14px; }
+  .psheet .pr button { flex: 1; height: 46px; border: 0; border-radius: 12px; font: 800 15px var(--body); cursor: pointer; }
+  .psheet .pyes { background: var(--teal); color: #fff; }
+  .psheet .pno { background: #eef2f3; color: var(--ink); }
+  .psheet .pyes:disabled { opacity: .7; }
 </style>
 </head>
 <body>
@@ -249,6 +262,7 @@
     <section class="card" id="sitelinkcard" hidden></section>
     <p class="foot" id="foot">Bu bağlantı size özeldir; siparişlerinizin durumunu gösterir.</p>
   </main>
+  <div class="psheet" id="psheet" role="dialog" aria-label="Bildirim izni" hidden></div>
 
 <script>
   var SUPABASE_URL = "https://hxldnojokckqgxecyxhc.supabase.co";
@@ -631,6 +645,7 @@
         '<div class="ok">' + (t.gun ? esc(dayLong(String(t.gun).slice(0, 10), base)) + ' halılarınızı almaya geliyoruz. ' : '') + 'Teşekkür ederiz!</div>' +
         (t.siparis ? '<a class="btn btn-loc next" href="./?id=' + encodeURIComponent(t.siparis) + '">' + (known ? "Halınızı takip edin" : "Yeni siparişi takip et") + '</a>' : '') + extra;
       bindKnown();
+      if (known && t.siparis) offerPush(String(t.siparis), 900);
       return;
     }
     if (!info.destek) {
@@ -708,6 +723,8 @@
             // talep kimliği döndüyse site talebi: uygulama kendiliğinden siparişe çevirir (v14)
             info.talep = { gun: pick, adet: pcs > 0 ? pcs : null, not: note || null, durum: "yeni", siparis: null, oto: !!r.talep };
             renderRequest(info, false, ctx);
+            // v14: "halınız hazır olunca haber verelim mi?" — abonelik bu bağlantıyla müşteriye bağlanır
+            offerPush(oid, 700);
             return;
           }
           btn.disabled = false; btn.textContent = sendLabel;
@@ -1012,6 +1029,7 @@
         '<p class="pnote">Değiştirmek isterseniz günü değiştirebilir ya da bizi arayabilirsiniz.</p>' +
         '<div class="btn-row"><button class="btn btn-call" id="sitechange">Günü değiştir</button>' + siteCall(info) + '</div>';
       document.getElementById("sitechange").onclick = function () { renderSite(info, req, true); };
+      watchSiteRequest(info);
       return;
     }
     // 2) Firma siparişe çevirdi: takip bağlantısı
@@ -1025,6 +1043,8 @@
         siteSave({});
         renderSite(info, null, false);
       };
+      // v14: sipariş oluştu → "halınız hazır olunca haber verelim mi?" (abonelik bu siparişle müşteriye bağlanır)
+      if (req.siparis) offerPush(String(req.siparis), 900);
       return;
     }
     // 3) Form: ad, telefon, adres (+ isteğe bağlı konum), gün, parça, not
@@ -1165,6 +1185,25 @@
       });
     }).catch(function () { renderSite(info, null, false); });
   }
+  // v14: gönderilen site siparişi firma uygulamasında siparişe dönünce (çoğunlukla birkaç dakika) kart kendiliğinden
+  // "oluşturuldu"ya geçer → bildirim penceresi o siparişle sorulur (sipariş olmadan abonelik müşteriye bağlanamaz).
+  // 20 saniyede bir, en çok 4 dakika.
+  var siteWatch = 0;
+  function watchSiteRequest(info) {
+    var t = siteSaved().talep;
+    if (!t || siteWatch) return;
+    var tries = 0;
+    siteWatch = setInterval(function () {
+      if (++tries > 12) { clearInterval(siteWatch); siteWatch = 0; return; }
+      rpc("site_request", { p_id: t }).then(function (r) {
+        if (r && r.bulundu && r.durum === "siparis" && siteWatch) {
+          clearInterval(siteWatch);
+          siteWatch = 0;
+          renderSite(info, r, false);
+        }
+      }).catch(function () {});
+    }, 20000);
+  }
   function loadSite() {
     var card = document.getElementById("card");
     document.getElementById("htitle").textContent = "Halı yıkama siparişi";
@@ -1297,8 +1336,8 @@
   }
 
   // ── Bildirim (v13, supabase/web-bildirim.sql + sw.js): "Haber verelim mi?" ──
-  // Müşteri izin verirse bu tarayıcı siparişin MÜŞTERİSİNE bağlanır: halı hazır olunca, yola çıkınca, teslimde (ve sonraki
-  // siparişlerinde) firmanın telefonu tarayıcıya bildirim gönderir. Sunucu desteklemiyorsa (SQL yok / firma kapattı),
+  // Müşteri izin verirse bu tarayıcı siparişin MÜŞTERİSİNE bağlanır: firmanın açtığı aşamalarda (varsayılan yalnız yola
+  // çıkınca; v15 turler) ve sonraki siparişlerinde, "Evde misiniz?" sorusunda ve kampanyada firmanın telefonu bildirim gönderir. Sunucu desteklemiyorsa (SQL yok / firma kapattı),
   // tarayıcı desteklemiyorsa (iPhone'da ana ekrana eklenmemiş Safari, uygulama içi tarayıcı) ya da izin reddedildiyse
   // kart çıkmaz. Soru yalnız teslim edilmemiş siparişte sorulur; açıksa her aşamada tek satır + "Kapat".
   var PUSH_KEY = "BCkt9hx0IouIUDAtNR_3RysSwhh3wFqxFkazwsEZxEfTfzrTCFxgxy61iPpWTk46lxG42phprnTtCC5ugFQUdnA";
@@ -1314,14 +1353,65 @@
     return out;
   }
   // Servis çalışanına not: hangi siparişin bağlantısından abone olundu (tarayıcı adresi yenilerse yeniden kaydolur)
-  function pushNote(endpoint) {
+  function pushNote(endpoint, oid) {
     try {
       caches.open(PUSH_BOX).then(function (c) {
-        return endpoint ? c.put("abone", new Response(JSON.stringify({ siparis: orderId, endpoint: endpoint }))) : c.delete("abone");
+        return endpoint ? c.put("abone", new Response(JSON.stringify({ siparis: oid || orderId, endpoint: endpoint }))) : c.delete("abone");
       }).catch(function () {});
     } catch (e) {}
   }
+  // Abonelik (kart ve alttan çıkan pencere ortak, v14): izin → servis çalışanı → tarayıcı aboneliği → sunucu (siparişin
+  // müşterisine bağlanır). İzin sorusu dokunuşun hemen ardından sorulmalı (tarayıcı kuralı): önce izin.
+  // Hata adları: "red" (engellendi), "vazgecti" (pencereyi kapattı), "kayit" (sunucu).
+  function pushSubscribe(oid) {
+    return Promise.resolve(Notification.requestPermission()).then(function (perm) {
+      if (perm !== "granted") throw new Error(perm === "denied" ? "red" : "vazgecti");
+      return navigator.serviceWorker.register("./sw.js", { scope: "./" });
+    }).then(function () {
+      return navigator.serviceWorker.ready;
+    }).then(function (reg) {
+      return reg.pushManager.getSubscription().then(function (s) {
+        return s || reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uBytes(PUSH_KEY) });
+      });
+    }).then(function (sub) {
+      var keys = (sub.toJSON() || {}).keys || {};
+      return rpc("push_subscribe", { p_order: oid, p_endpoint: sub.endpoint, p_p256dh: keys.p256dh || null, p_auth: keys.auth || null }).then(function (r) {
+        if (!r || !r.ok) throw new Error("kayit");
+        pushNote(sub.endpoint, oid);
+        return true;
+      });
+    });
+  }
   var pushDelivered = false;
+  // v15: metinler firmanın açtığı haberlere göre (push_state.turler; varsayılan yalnız "yolda" — kullanıcı 15 Kasım: "çok
+  // bildirim müşteriyi sıkar"). turler yoksa (eski SQL: her aşamada haber gider) eski metin. Haber kapalı olsa da firma
+  // "Evde misiniz?"i elle sorabilir: liste boşsa "teslimattan önce".
+  var pushKinds = null;
+  function setPushKinds(st) { pushKinds = st && Array.isArray(st.turler) ? st.turler : null; }
+  function pushHas(k) { return (pushKinds || ["hazir", "yolda"]).indexOf(k) >= 0; }
+  function pushWhen() {
+    var p = [];
+    if (pushHas("alindi")) p.push("siparişiniz alınınca");
+    if (pushHas("hazir")) p.push("halılarınız hazır olunca");
+    if (pushHas("yolda")) p.push("teslimata çıktığımızda");
+    if (pushHas("teslim")) p.push("teslim edilince");
+    if (!p.length) return "teslimattan önce";
+    return p.length > 1 ? p.slice(0, -1).join(", ") + " ve " + p[p.length - 1] : p[0];
+  }
+  function capFirst(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+  // Teslimata ilişkin soru ("Evdeyim / Evde değilim") gidecek mi: yola çıkınca haberi açıksa ya da hiçbir haber açık değilse
+  function pushAsksHome() { return pushHas("yolda") || !(pushHas("alindi") || pushHas("hazir") || pushHas("teslim")); }
+  function pushTitle() {
+    if (pushHas("hazir")) return "Halınız hazır olunca haber verelim mi?";
+    return pushAsksHome() ? "Halılarınızı getirirken haber verelim mi?" : "Siparişinizle ilgili haber verelim mi?";
+  }
+  // Kampanya da bildirimle gidebilir (firma elle, günde en çok bir): izin verilen anda söylenir — teslimat için "Evet"
+  // diyen müşteri sonra kampanya görünce kandırılmış hissetmesin (ticari ileti önceden izin ister)
+  function pushBody() {
+    return capFirst(pushWhen()) + " telefonunuza bildirim gelir" +
+      (pushAsksHome() ? "; evde olup olmadığınızı tek dokunuşla söylersiniz." : ".") + " Ara sıra kampanyalarımızı da duyururuz.";
+  }
+  function pushOnLine() { return capFirst(pushWhen()) + " haber vereceğiz."; }
   // Servis çalışanı (sw.js) bu sayfanın yanında mı: ortak sayfada (GitHub) sayfayla birlikte yüklenir; firmanın kendi
   // sitesinde yükleyici "push: true" der (o sitede /takip/sw.js varsa). Yoksa kart hiç çıkmaz — eksik yüklemede müşteri
   // "Evet"e basıp hata görmesin.
@@ -1337,9 +1427,12 @@
     }).then(function (sub) {
       return rpc("push_state", { p_order: orderId, p_endpoint: sub ? sub.endpoint : null }).then(function (st) {
         if (!st || !st.destek) { box.hidden = true; return; }
+        setPushKinds(st);
         var on = !!(st.abone && sub && Notification.permission === "granted");
         if (!on && pushDelivered) { box.hidden = true; return; }
         renderPush(on);
+        // v14: teslim edilmemiş siparişte alttan pencere de çıkar (1,5 sn sonra; "Şimdi değil" → 7 gün sorulmaz)
+        if (!on && !pushDelivered && !sheetSnoozed()) setTimeout(function () { showSheet(orderId, function () { renderPush(true); }); }, 1500);
       });
     }).catch(function () { box.hidden = true; });
   }
@@ -1348,12 +1441,12 @@
     box.classList.toggle("slim", on);
     if (on) {
       box.innerHTML = '<div class="pushon">' + BELL + '<div><b>Bildirimler açık</b><span>' +
-        (pushDelivered ? "Sonraki siparişlerinizde de haber vereceğiz." : "Halılarınız hazır olunca ve yola çıkınca haber vereceğiz.") +
+        (pushDelivered ? "Sonraki siparişlerinizde de haber vereceğiz." : esc(pushOnLine())) +
         '</span></div><button type="button" class="linkbtn" id="pushoff">Kapat</button></div>';
       document.getElementById("pushoff").onclick = pushOff;
     } else {
       box.innerHTML = '<p class="loc-title">Haber verelim mi?</p>' +
-        '<p class="loc-text">Halılarınız hazır olunca ve yola çıkınca telefonunuza bildirim gönderelim. İstediğiniz zaman kapatabilirsiniz.</p>' +
+        '<p class="loc-text">' + esc(pushBody()) + ' İstediğiniz zaman kapatabilirsiniz.</p>' +
         '<button class="btn btn-loc" id="pushbtn">' + BELL + 'Evet, haber ver</button><div id="pushmsg">' + (err ? '<div class="err">' + esc(err) + '</div>' : '') + '</div>';
       document.getElementById("pushbtn").onclick = pushOn;
     }
@@ -1363,29 +1456,73 @@
     var btn = document.getElementById("pushbtn");
     btn.disabled = true;
     btn.textContent = "İzin bekleniyor…";
-    // İzin sorusu dokunuşun hemen ardından sorulmalı (tarayıcı kuralı): önce izin, sonra servis çalışanı
-    Promise.resolve(Notification.requestPermission()).then(function (perm) {
-      if (perm !== "granted") throw new Error(perm === "denied" ? "red" : "vazgecti");
-      btn.textContent = "Açılıyor…";
-      return navigator.serviceWorker.register("./sw.js", { scope: "./" });
-    }).then(function () {
-      return navigator.serviceWorker.ready;
-    }).then(function (reg) {
-      return reg.pushManager.getSubscription().then(function (s) {
-        return s || reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uBytes(PUSH_KEY) });
-      });
-    }).then(function (sub) {
-      var keys = (sub.toJSON() || {}).keys || {};
-      return rpc("push_subscribe", { p_order: orderId, p_endpoint: sub.endpoint, p_p256dh: keys.p256dh || null, p_auth: keys.auth || null }).then(function (r) {
-        if (!r || !r.ok) throw new Error("kayit");
-        pushNote(sub.endpoint);
-        renderPush(true);
-      });
+    pushSubscribe(orderId).then(function () {
+      closeSheet();
+      renderPush(true);
     }).catch(function (e) {
       var why = e && e.message;
       if (why === "red") { document.getElementById("pushcard").hidden = true; return; }
       renderPush(false, why === "vazgecti" ? "" : "Bildirimler açılamadı. Lütfen biraz sonra yeniden deneyin.");
     });
+  }
+
+  // ── Alttan çıkan "Haber verelim mi?" (v14, 15 Kasım). Kullanıcı: "bazı sitelere girince bildirim istiyor musunuz diye
+  // soruyor". Tarayıcının izin penceresi sayfa açılır açılmaz İSTENMEZ (Chrome bağlamsız soranı adres çubuğunda sessiz
+  // zile indirir, iPhone / Firefox dokunmadan açmaz, "Engelle"den sonra bir daha sorulamaz): önce bizim penceremiz,
+  // "Evet"e dokununca tarayıcınınki. Yalnız müşterinin belli olduğu anlarda: takip bağlantısı (teslim edilmemiş sipariş),
+  // formda sipariş verince (tanınan müşteri hemen, yeni müşteri siparişi oluşunca). "Şimdi değil" → 7 gün sorulmaz;
+  // izin reddedilmişse ya da bildirim zaten açıksa hiç çıkmaz.
+  var SHEET_KEY = "halitakip.bildirimSoru";
+  var sheetShown = false;
+  function sheetSnoozed() {
+    try { var t = Number(localStorage.getItem(SHEET_KEY) || 0); return t > 0 && Date.now() - t < 7 * 864e5; } catch (e) { return false; }
+  }
+  function snoozeSheet() { try { localStorage.setItem(SHEET_KEY, String(Date.now())); } catch (e) {} }
+  function closeSheet() {
+    var el = document.getElementById("psheet");
+    if (!el || el.hidden) return;
+    el.classList.remove("on");
+    setTimeout(function () { el.hidden = true; }, 400);
+  }
+  // Koşulları denetleyip (destek, abone değil) gösterir. oid: aboneliğin bağlanacağı sipariş; onDone: açıldıktan sonra
+  function offerPush(oid, delay, onDone) {
+    if (sheetShown || !oid || !pushCapable() || !swHere() || Notification.permission === "denied" || sheetSnoozed()) return;
+    navigator.serviceWorker.getRegistration("./").then(function (reg) {
+      return reg ? reg.pushManager.getSubscription() : null;
+    }).then(function (sub) {
+      return rpc("push_state", { p_order: oid, p_endpoint: sub ? sub.endpoint : null }).then(function (st) {
+        if (!st || !st.destek || (st.abone && sub && Notification.permission === "granted")) return;
+        setPushKinds(st);
+        setTimeout(function () { showSheet(oid, onDone); }, delay || 0);
+      });
+    }).catch(function () {});
+  }
+  function showSheet(oid, onDone) {
+    var el = document.getElementById("psheet");
+    if (sheetShown || !el) return;
+    sheetShown = true;
+    el.innerHTML = '<div class="ph">' + BELL + '<div><b>' + esc(pushTitle()) + '</b>' +
+      '<span>' + esc(pushBody()) + '</span></div></div>' +
+      '<div class="pr"><button type="button" class="pno" id="psno">Şimdi değil</button>' +
+      '<button type="button" class="pyes" id="psyes">Evet, haber ver</button></div><div id="psmsg"></div>';
+    el.hidden = false;
+    setTimeout(function () { el.classList.add("on"); }, 20);
+    document.getElementById("psno").onclick = function () { snoozeSheet(); closeSheet(); };
+    document.getElementById("psyes").onclick = function () {
+      var b = document.getElementById("psyes");
+      b.disabled = true;
+      b.textContent = "İzin bekleniyor…";
+      pushSubscribe(oid).then(function () {
+        closeSheet();
+        if (onDone) onDone();
+      }).catch(function (e) {
+        var why = e && e.message;
+        if (why === "red" || why === "vazgecti") { snoozeSheet(); closeSheet(); return; }
+        b.disabled = false;
+        b.textContent = "Evet, haber ver";
+        document.getElementById("psmsg").innerHTML = '<div class="err">Bildirimler açılamadı. Lütfen biraz sonra yeniden deneyin.</div>';
+      });
+    };
   }
   function pushOff() {
     navigator.serviceWorker.getRegistration("./").then(function (reg) {
