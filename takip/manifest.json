@@ -1,0 +1,19 @@
+{
+  "id": "/takip/",
+  "name": "Gençoğlu Halı Yıkama",
+  "short_name": "Gençoğlu",
+  "description": "Siparişleriniz, fiyatlarımız ve yeni sipariş tek dokunuşta.",
+  "lang": "tr",
+  "dir": "ltr",
+  "start_url": "/takip/?app=1",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f1f5f4",
+  "theme_color": "#0f766e",
+  "icons": [
+    { "src": "/takip/ikon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/takip/ikon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/takip/ikon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="takip-yukleyici" content="1">
+<title>Halınız nerede? · Gençoğlu Halı Yıkama</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Gençoğlu Halı Yıkama">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:title" content="Halınız nerede? 📍">
+<meta property="og:description" content="Gençoğlu Halı Yıkama · siparişinizi adım adım takip edin, konumunuzu tek dokunuşla iletin.">
+<meta property="og:image" content="https://www.gencogluhaliyikama.com/takip/kapak.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="theme-color" content="#0b1d4d">
+<link rel="icon" type="image/png" href="/logo.png">
+<style>
+html,body{margin:0;min-height:100%;background:#f5f8fc;color:#0d1a33;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.ld{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:24px;box-sizing:border-box}
+.ld img{height:64px;width:auto}
+.sp{width:34px;height:34px;border:3px solid #d6e8fd;border-top-color:#1769c9;border-radius:50%;animation:r .8s linear infinite}
+@keyframes r{to{transform:rotate(360deg)}}
+.ld b{font-size:17px}
+.ld a{color:#1769c9;font-weight:600}
+</style>
+</head>
+<body>
+<div class="ld">
+  <img src="/img/logo-mark.png" alt="Gençoğlu Halı Yıkama" width="200" height="120">
+  <div class="sp" aria-hidden="true"></div>
+  <b>Siparişiniz yükleniyor…</b>
+  <noscript><a href="https://genc471.github.io/spari-takip/">Sipariş takip sayfasını açın</a></noscript>
+</div>
+<script>
+// Gençoğlu takip sayfası (2026-11-14). Müşteriye WhatsApp'tan giden takip linki bu alan adında açılır (önizlemede
+// gencogluhaliyikama.com görünür). Sayfanın kendisi Sipariş Takip Pro'nun ortak takip sayfasıdır (GitHub Pages): her
+// açılışta oradan alınır, burada kopyası YOK — ortak sayfa güncellenince bu adres de kendiliğinden güncel olur.
+// Yalnız Gençoğlu'nun siparişleri burada açılır; başka firmanın / markanın siparişi ortak adrese yönlendirilir.
+(function () {
+  var PAGE = "index.html";
+  var CODE = "PR9F9V";  // Gençoğlu sipariş sitesi kodu (ana sayfadaki CFG.code ile aynı)
+  var BASE = "https://genc471.github.io/spari-takip/";
+  var API = "https://hxldnojokckqgxecyxhc.supabase.co/rest/v1/rpc/";
+  var KEY = "sb_publishable_ZTqkY2ZJPKqtJo5eNycwAA_owbOKT52";
+  // Sayfaya bu sitenin ayarları (15 Kasım, ortak sayfa v13): sipariş kodu (ana ekrandan açılınca form), ana sayfa
+  // ("Komşunuza önerin" bu adresi paylaşır), uygulama bildirgesi ("Ana ekrana ekle"). Bildirimlerin servis çalışanı
+  // /takip/sw.js (ortak sayfanınkiyle aynı dosya).
+  var SITE = { kod: CODE, home: "https://www.gencogluhaliyikama.com/", manifest: "/takip/manifest.json", push: true };
+  var HEAD = '<script>window.TAKIP_SITE=' + JSON.stringify(SITE) + ';<\/script>' +
+    '<link rel="icon" type="image/png" href="/logo.png"><link rel="apple-touch-icon" href="/takip/ikon-192.png">';
+  var q = location.search;
+  var id = new URLSearchParams(q).get("id");
+  function generic() { location.replace(BASE + (PAGE === "index.html" ? "" : PAGE) + q); }
+  // Sipariş bu firmanın mı? (site_link: siparişin markasının sipariş sitesi kodu). Cevap yoksa / hata varsa açılır.
+  function ours() {
+    if (!id || !CODE) return Promise.resolve(true);
+    return fetch(API + "site_link", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "apikey": KEY, "Authorization": "Bearer " + KEY },
+      body: JSON.stringify({ p_order: id })
+    }).then(function (r) { return r.json(); })
+      .then(function (r) { return !(r && r.kod && String(r.kod).toUpperCase() !== CODE.toUpperCase()); })
+      .catch(function () { return true; });
+  }
+  ours().then(function (ok) {
+    if (!ok) { generic(); return; }
+    return fetch(BASE + PAGE, { cache: "no-cache" }).then(function (r) {
+      if (!r.ok) throw new Error("sayfa " + r.status);
+      return r.text();
+    }).then(function (html) {
+      html = html.replace(/<head[^>]*>/i, function (m) { return m + HEAD; });
+      document.open();
+      document.write(html);
+      document.close();
+      // Sayfanın altına sitemize dönüş bağlantısı
+      var a = document.createElement("a");
+      a.href = "/";
+      a.textContent = "Gençoğlu Halı Yıkama · gencogluhaliyikama.com";
+      a.setAttribute("style", "display:block;text-align:center;margin:8px auto 28px;font:600 14px system-ui,sans-serif;color:#1769c9;text-decoration:none");
+      (document.body || document.documentElement).appendChild(a);
+    });
+  }).catch(generic);
+})();
+</script>
+</body>
+</html>
