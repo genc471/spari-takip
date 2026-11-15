@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="fiyat-gom" content="1">
+<title>Fiyat listesi</title>
+<!--
+  Sipariş Takip · firmanın KENDİ web sitesine gömülen CANLI fiyat listesi (2026-11-15, v1).
+  Kullanıcı: "uygulamayı satacağım; müşterilerin sitesini de uygulamaya bağlamam gerekiyor, fiyatlarını güncelleyince
+  siteden de güncellenmesi gerekiyor". Her açılışta site_info (supabase/firma-sitesi.sql) okunur: firma uygulamada
+  fiyat değiştirince burası da değişir. Fiyatlar firmada "Sipariş sitesi" + "Sitede fiyatları göster" açıkken gelir.
+  Gömme: gom.js (yükseklik kendiliğinden) ya da düz iframe — kodları uygulama verir (store/site-embed.ts).
+  Parametreler: s=KOD (zorunlu) · renk=0f766e (vurgu) · baslik=0 (başlıksız) · siparis=0 (düğmesiz) · zemin=0 (kartsız)
+  · id (gom.js verir; yüksekliği o çerçeveye bildirir). Test: scripts/verify-site-embed.cjs.
+-->
+<style>
+  :root { --ac: #0f766e; --ink: #0f172a; --sub: #64748b; --line: #e2e8f0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: transparent; }
+  body { font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; color: var(--ink); padding: 2px; -webkit-text-size-adjust: 100%; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; }
+  .flat .card { background: transparent; border: 0; border-radius: 0; padding: 0; }
+  h2 { font-size: 18px; line-height: 1.25; font-weight: 800; margin: 0 0 4px; }
+  .grp { font-size: 13px; font-weight: 700; color: var(--sub); margin: 14px 0 0; }
+  ul { list-style: none; }
+  li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-bottom: 1px dashed var(--line); }
+  li:last-child { border-bottom: 0; }
+  .n { font-weight: 600; overflow-wrap: anywhere; }
+  .v { font-weight: 800; white-space: nowrap; }
+  .v small { font-weight: 600; color: var(--sub); font-size: 12.5px; }
+  .note { margin-top: 10px; font-size: 13px; color: var(--sub); }
+  .go { display: block; margin-top: 14px; text-align: center; text-decoration: none; background: var(--ac); color: #fff; font-weight: 700; border-radius: 12px; padding: 13px 16px; }
+  .go.line { background: transparent; color: var(--ac); border: 1.5px solid var(--ac); }
+  .msg { color: var(--sub); font-size: 14px; padding: 4px 0; }
+  .sk { height: 14px; border-radius: 7px; background: #eef2f6; margin: 12px 0; }
+</style>
+</head>
+<body>
+<div id="root"><div class="card"><div class="sk" style="width:45%"></div><div class="sk"></div><div class="sk" style="width:80%"></div><div class="sk" style="width:65%"></div></div></div>
+<script>
+(function () {
+  var API = "https://hxldnojokckqgxecyxhc.supabase.co/rest/v1/rpc/";
+  var KEY = "sb_publishable_ZTqkY2ZJPKqtJo5eNycwAA_owbOKT52";
+  var q = new URLSearchParams(window.location.search);
+  var code = String(q.get("s") || "").trim().toUpperCase();
+  var frameId = String(q.get("id") || "").replace(/[^\w-]/g, "").slice(0, 40);
+  var accent = String(q.get("renk") || "").replace(/^#/, "");
+  var showTitle = q.get("baslik") !== "0";
+  var showOrder = q.get("siparis") !== "0";
+  var root = document.getElementById("root");
+  if (/^[0-9a-fA-F]{6}$/.test(accent)) document.documentElement.style.setProperty("--ac", "#" + accent);
+  if (q.get("zemin") === "0") document.body.className = "flat";
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  // 1500 → "1.500"; küsuratlı fiyat virgülle (2,50)
+  function tl(n) { return n % 1 ? n.toFixed(2).replace(".", ",") : String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+  // Gömüldüğü sayfaya yüksekliği bildir (gom.js çerçeveyi bu boya getirir; düz iframe'de kimse dinlemez)
+  function size() {
+    if (!frameId || window.parent === window) return;
+    var h = Math.ceil(document.documentElement.getBoundingClientRect().height);
+    try { window.parent.postMessage({ halitakip: "boy", id: frameId, h: h }, "*"); } catch (e) {}
+  }
+  function paint(html) { root.innerHTML = html; size(); }
+  function card(inner) { return '<div class="card">' + (showTitle ? "<h2>Fiyat listesi</h2>" : "") + inner + "</div>"; }
+
+  function render(info) {
+    var all = (Array.isArray(info.fiyatlar) ? info.fiyatlar : []).map(function (p) {
+      p = p || {};
+      return { ad: String(p.ad || "").trim(), birim: String(p.birim || "adet").trim() || "adet", fiyat: Number(String(p.fiyat).replace(",", ".")), hizmet: !!p.hizmet };
+    }).filter(function (p) { return p.ad && p.fiyat > 0; });
+    var tel = String(info.firma_tel || "").trim();
+    // Sipariş: site açıksa firmanın sipariş sayfası (yeni sekmede; gömülü çerçevenin içinde açılmasın), kapalıysa arama
+    var order = !showOrder ? "" : info.acik
+      ? '<a class="go" href="./siparis.html?s=' + encodeURIComponent(code) + '" target="_blank" rel="noopener">Online sipariş ver</a>'
+      : tel ? '<a class="go line" href="tel:' + esc(tel.replace(/[^\d+]/g, "")) + '" target="_top">Sipariş için arayın · ' + esc(tel) + "</a>" : "";
+    if (!all.length) { paint(card('<p class="msg">Güncel fiyatlarımız için bize ulaşın.</p>' + order)); return; }
+    function isM2(p) { return /m²|m2/i.test(p.birim); }
+    var carpets = all.filter(function (p) { return !p.hizmet && isM2(p); });
+    var others = all.filter(function (p) { return !p.hizmet && !isM2(p); });
+    var extra = all.filter(function (p) { return p.hizmet; });
+    function rows(xs) {
+      return "<ul>" + xs.map(function (p) {
+        return '<li><span class="n">' + esc(p.ad) + '</span><span class="v">' + tl(p.fiyat) + " TL <small>/ " + esc(p.birim) + "</small></span></li>";
+      }).join("") + "</ul>";
+    }
+    var several = (carpets.length ? 1 : 0) + (others.length ? 1 : 0) + (extra.length ? 1 : 0) > 1;
+    var html = "";
+    if (carpets.length) html += (several ? '<p class="grp">Halılar (m²)</p>' : "") + rows(carpets);
+    if (others.length) html += (several ? '<p class="grp">Diğer ürünler</p>' : "") + rows(others);
+    if (extra.length) html += (several ? '<p class="grp">Ek hizmetler</p>' : "") + rows(extra);
+    if (carpets.length) html += '<p class="note">m² fiyatlı halılarda tutar, halı yıkanıp ölçüldükten sonra kesinleşir' + (info.bolge ? "; fiyat adresinize göre değişebilir" : "") + ".</p>";
+    paint(card(html + order));
+  }
+
+  function load(tries) {
+    fetch(API + "site_info", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: KEY, Authorization: "Bearer " + KEY },
+      body: JSON.stringify({ p_code: code })
+    }).then(function (r) {
+      if (!r.ok) throw new Error("site_info " + r.status);
+      return r.json();
+    }).then(function (info) {
+      if (!info || info.bulundu !== true) { paint(card('<p class="msg">Fiyat listesi bulunamadı (kod: ' + esc(code) + ").</p>")); return; }
+      render(info);
+    }).catch(function () {
+      if (tries < 2) setTimeout(function () { load(tries + 1); }, 2500);
+      else paint(card('<p class="msg">Fiyat listesi şu an yüklenemedi; sayfayı yenileyin.</p>'));
+    });
+  }
+
+  window.addEventListener("resize", size);
+  if (typeof ResizeObserver === "function") new ResizeObserver(size).observe(document.body);
+  if (!/^[A-Z0-9]{4,12}$/.test(code)) { paint(card('<p class="msg">Fiyat listesi için firma kodu eksik.</p>')); return; }
+  load(0);
+})();
+</script>
+</body>
+</html>
