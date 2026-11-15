@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="robots" content="noindex" />
-<!-- v12 (2026-11-14): firmalar karışmaz — müşterinin ad / telefon / adres / konumu bu telefonda FİRMA KODUNA GÖRE ayrı hatırlanır (v11'in ortak kaydı silinir); "Siparişlerim" başka firmanın siparişleri araya girse de 10 kimliğe kadar dener. Sayfa firmaların kendi alan adından da açılabilir (/takip/ yükleyici, store/tracking siteBase). v11 (2026-11-13): "Siparişlerim" — müşteri elindeki herhangi bir sipariş bağlantısından / siteden önceki siparişlerini görür (customer_orders; tutar, adres, telefon yok); ad, telefon, adres ve konum bu telefonda bütün firma siteleri için ortak hatırlanır ("Unut" ile silinir). v10 (2026-11-13): silinen / iptal edilen siparişin bağlantısı hata ya da "bekleniyor" demez → "Bu sipariş kapatıldı" + firmanın sipariş formu (order_gone). v9 (2026-11-13): firma sitesi — siparis.html?s=KOD ile müşteri (yeni ya da eski) kendi siparişini verir, fiyatları görür; takip sayfasından siteye bağlantı. Aynı sayfa üç dosya olarak yayınlanır (index / tesekkur / siparis — yalnız önizleme başlığı ve kapağı farklı; scripts/make-tracking-bundle.cjs). v8: "Tekrar yıkat" kartı. v7: müşteri yanıtı kartı + "Google'da yorum yaz" + havale/EFT hesabı. Uygulama bu işaretlerle sayfanın neyi desteklediğini anlar (store/order-replies, store/order-requests) -->
+<!-- v13 (2026-11-15): sayfa yalnız takip değil, işe yarar — üstte hızlı düğmeler (Sipariş ver · Ara · WhatsApp; "Sipariş ver" duruma göre "Tekrar yıkat" kartına, firmanın sipariş formuna ya da WhatsApp'a gider), takip sayfasında fiyat listesi (ilk kalemler + "Tüm fiyatlar"), teslimden sonra "Komşunuza önerin" (paylaş) ve halı bakım önerileri. Kullanıcı: "sipariş ver kısmı altta kalıyor, fark edilmiyor; üst satırlara". v12 (2026-11-14): firmalar karışmaz — müşterinin ad / telefon / adres / konumu bu telefonda FİRMA KODUNA GÖRE ayrı hatırlanır (v11'in ortak kaydı silinir); "Siparişlerim" başka firmanın siparişleri araya girse de 10 kimliğe kadar dener. Sayfa firmaların kendi alan adından da açılabilir (/takip/ yükleyici, store/tracking siteBase). v11 (2026-11-13): "Siparişlerim" — müşteri elindeki herhangi bir sipariş bağlantısından / siteden önceki siparişlerini görür (customer_orders; tutar, adres, telefon yok); ad, telefon, adres ve konum bu telefonda bütün firma siteleri için ortak hatırlanır ("Unut" ile silinir). v10 (2026-11-13): silinen / iptal edilen siparişin bağlantısı hata ya da "bekleniyor" demez → "Bu sipariş kapatıldı" + firmanın sipariş formu (order_gone). v9 (2026-11-13): firma sitesi — siparis.html?s=KOD ile müşteri (yeni ya da eski) kendi siparişini verir, fiyatları görür; takip sayfasından siteye bağlantı. Aynı sayfa üç dosya olarak yayınlanır (index / tesekkur / siparis — yalnız önizleme başlığı ve kapağı farklı; scripts/make-tracking-bundle.cjs). v8: "Tekrar yıkat" kartı. v7: müşteri yanıtı kartı + "Google'da yorum yaz" + havale/EFT hesabı. Uygulama bu işaretlerle sayfanın neyi desteklediğini anlar (store/order-replies, store/order-requests) -->
 <meta name="takip-yanit" content="1" />
 <meta name="takip-talep" content="1" />
 <meta name="site-siparis" content="1" />
@@ -190,6 +190,37 @@
   .sitelink b { display: block; font-size: 15px; }
   .sitelink span { display: block; font-size: 13px; color: var(--sub); margin-top: 2px; }
   .sitelink .go { margin-left: auto; color: var(--teal); font: 700 26px/1 var(--body); }
+
+  /* v13: üstte hızlı düğmeler — "Sipariş ver" ilk bakışta görünsün (eskiden en altta küçük bir satırdı) */
+  .quick { display: flex; gap: 8px; max-width: 452px; margin: 18px auto 0; }
+  .qb { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 48px; padding: 0 8px;
+    border-radius: 14px; border: 1.5px solid rgba(255, 255, 255, 0.38); background: rgba(255, 255, 255, 0.1); color: #fff;
+    font: 800 15px var(--body); text-decoration: none; white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .qb svg { width: 17px; height: 17px; flex: none; }
+  .qb.main { flex: 1.45; background: #fff; border-color: #fff; color: var(--teal); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); }
+  .qb:focus-visible { outline: 3px solid #99f6e4; outline-offset: 2px; }
+  @media (max-width: 374px) { .qb { font-size: 14px; gap: 5px; padding: 0 6px; } .qb svg { width: 15px; height: 15px; } }
+  /* Fiyat listesi takip sayfasında kısa: ilk kalemler + "Tüm fiyatlar" */
+  .pmore { display: block; width: 100%; margin-top: 10px; padding: 12px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff;
+    color: var(--teal); font: 800 15px var(--body); cursor: pointer; }
+  /* Komşunuza önerin (teslimden sonra) */
+  .sharecard { background: linear-gradient(150deg, #ffffff 55%, #ecf7f5); }
+  .btn-share { background: var(--teal); color: #fff; }
+  /* Halı bakım önerileri */
+  .tips { list-style: none; margin: 4px 0 0; padding: 0; counter-reset: t; }
+  .tips li { position: relative; padding: 10px 0 10px 38px; border-bottom: 1px solid var(--line); font-size: 14.5px; line-height: 1.45; color: var(--ink); counter-increment: t; }
+  .tips li:last-child { border-bottom: none; }
+  .tips li::before { content: counter(t); position: absolute; left: 0; top: 9px; width: 26px; height: 26px; border-radius: 9px; background: #ecf7f5;
+    color: var(--teal); font: 700 15px/26px var(--num); text-align: center; }
+  .tips li b { display: block; font-size: 15px; margin-bottom: 1px; }
+  /* Bildirim (v13): "Haber verelim mi?" — açıkken tek satır */
+  .pushon { display: flex; align-items: center; gap: 12px; }
+  .pushon > svg { width: 26px; height: 26px; color: var(--teal); flex: none; }
+  .pushon div { flex: 1; min-width: 0; }
+  .pushon b { display: block; font-size: 15px; }
+  .pushon span { display: block; font-size: 13px; color: var(--sub); margin-top: 2px; line-height: 1.4; }
+  .linkbtn { border: none; background: none; color: var(--teal); font: 800 14px var(--body); padding: 8px 4px; cursor: pointer; }
+  .card.slim { padding: 14px 16px; }
 </style>
 </head>
 <body>
@@ -197,6 +228,7 @@
     <div class="logo" id="logo" hidden></div>
     <div class="brand" id="brand">Sipariş Takip</div>
     <h1 class="title" id="htitle">Halınız nerede?</h1>
+    <nav class="quick" id="quick" hidden aria-label="Hızlı işlemler"></nav>
   </header>
   <main class="wrap">
     <section class="card" id="gonecard" hidden aria-live="polite"></section>
@@ -206,10 +238,14 @@
     <section class="card replycard" id="replycard" hidden aria-live="polite"></section>
     <section class="card loccard" id="loccard" hidden></section>
     <section class="card paycard" id="paycard" hidden></section>
+    <section class="card pushcard" id="pushcard" hidden aria-live="polite"></section>
     <section class="card ratecard" id="ratecard" hidden></section>
+    <section class="card sharecard" id="sharecard" hidden></section>
+    <section class="card installcard" id="installcard" hidden></section>
     <section class="card reqcard" id="reqcard" hidden aria-live="polite"></section>
     <section class="card" id="mycard" hidden></section>
     <section class="card pricecard" id="pricecard" hidden></section>
+    <section class="card" id="tipcard" hidden></section>
     <section class="card" id="sitelinkcard" hidden></section>
     <p class="foot" id="foot">Bu bağlantı size özeldir; siparişlerinizin durumunu gösterir.</p>
   </main>
@@ -239,6 +275,20 @@
   var CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
   var PHONE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>';
   var PIN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.6"/></svg>';
+  var PLUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+  var SHARE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>';
+  var BELL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>';
+  var HOME = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 8v6M9 11h6"/></svg>';
+
+  // Firmanın kendi sitesindeki yükleyici (/takip/) sayfaya ayarlarını bırakır: kod, ana sayfa, uygulama bildirgesi
+  // (manifest → "Ana ekrana ekle"). Ortak sayfada (GitHub) bildirge yok: firmanın adı ve simgesi olmadan eklenmesin.
+  var SITE = window.TAKIP_SITE && typeof window.TAKIP_SITE === "object" ? window.TAKIP_SITE : {};
+  if (typeof SITE.manifest === "string" && /^\/[\w\/.-]+\.json$/.test(SITE.manifest) && !document.querySelector('link[rel="manifest"]')) {
+    var mf = document.createElement("link");
+    mf.rel = "manifest";
+    mf.href = SITE.manifest;
+    document.head.appendChild(mf);
+  }
 
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 
@@ -358,18 +408,16 @@
     if (data.parca) rows += '<div class="row"><div class="k">Parça</div><div class="v num">' + esc(data.parca) + ' adet</div></div>';
     if (data.urun_ozet) rows += '<div class="row"><div class="k">Ürünler</div><div class="v">' + esc(data.urun_ozet) + '</div></div>';
 
-    var contact = "";
-    if (data.firma_tel) {
-      contact = '<div class="btn-row">' +
-        '<a class="btn btn-call" href="tel:' + esc(String(data.firma_tel).replace(/\s/g, "")) + '">' + PHONE + 'Ara</a>' +
-        '<a class="btn btn-wa" href="https://wa.me/' + phoneDigits(data.firma_tel) + '">WhatsApp</a>' +
-        '</div>';
-    }
+    // Ara / WhatsApp artık üstteki hızlı düğmelerde (v13) — kartta ikinci kez yok
+    quick.tel = String(data.firma_tel || "").replace(/[^\d+]/g, "");
+    quick.status = data.durum || "";
+    quick.firma = data.firma_adi || "";
+    renderQuick();
 
     card.innerHTML =
       '<p class="cap">SİPARİŞİNİZİN YOLCULUĞU</p>' +
       '<ol class="hat">' + hat + '</ol>' +
-      (rows ? '<div class="rows">' + rows + '</div>' : "") + contact;
+      (rows ? '<div class="rows">' + rows + '</div>' : "");
 
     // Müşteri yanıtı (v7, supabase/takip-yanit.sql): alış ya da teslim günü evde olacak mı. Sunucu desteklemiyorsa
     // (yanit_destek yok) ya da ziyaret günü belli değilse kart çıkmaz.
@@ -398,6 +446,12 @@
       document.getElementById("htitle").textContent = "Teşekkür ederiz";
       document.title = "Teşekkür ederiz · Sipariş Takip";
     }
+    // Teslimden sonra: komşulara önerme + halı bakım önerileri (v13)
+    if (delivered) { renderShare(); renderTips(); }
+    else { document.getElementById("sharecard").hidden = true; document.getElementById("tipcard").hidden = true; }
+    loadPush(data);
+    pageReady = true;
+    renderInstall();
     loadSiteLink();
     // Siparişlerim (v11): bu telefon siparişi hatırlar; müşterinin öbür siparişleri altta
     rememberOrder(orderId);
@@ -486,6 +540,9 @@
     rpc("request_info", { p_order: orderId }).then(function (r) {
       if (!r || typeof r.destek !== "boolean") { hideRequest(); return; }
       renderRequest(r, false);
+      // Üstteki "Sipariş ver" form doldurtmadan bu karta gider (müşteri zaten tanınıyor)
+      quick.req = !!r.destek && !document.getElementById("reqcard").hidden;
+      renderQuick();
     }).catch(hideRequest);
   }
   function parseYmd(s) { var p = String(s).slice(0, 10).split("-"); return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2])); }
@@ -856,7 +913,8 @@
     var tel = String(info.firma_tel || "").replace(/[^\d+]/g, "");
     return tel ? '<a class="btn btn-call" href="tel:' + esc(tel) + '">' + PHONE + 'Bizi arayın</a>' : '';
   }
-  function renderPrices(info) {
+  // short (v13, takip sayfası): önce ilk 5 kalem, "Tüm fiyatlar (N)" ile hepsi — sayfa fiyat listesine boğulmasın
+  function renderPrices(info, short) {
     var box = document.getElementById("pricecard");
     var list = Array.isArray(info.fiyatlar) ? info.fiyatlar : [];
     if (!list.length) { box.hidden = true; return; }
@@ -867,6 +925,14 @@
     }
     var main = list.filter(function (p) { return !p.hizmet; });
     var extra = list.filter(function (p) { return p.hizmet; });
+    var FIRST = 5;
+    if (short && list.length > FIRST + 1) {
+      box.innerHTML = '<p class="loc-title">Fiyatlarımız</p>' + rows((main.length ? main : list).slice(0, FIRST)) +
+        '<button type="button" class="pmore" id="pmore">Tüm fiyatlar (' + list.length + ')</button>';
+      box.hidden = false;
+      document.getElementById("pmore").onclick = function () { renderPrices(info, false); };
+      return;
+    }
     box.innerHTML = '<p class="loc-title">Fiyatlarımız</p>' + (main.length ? rows(main) : "") +
       (extra.length ? '<p class="sec" style="margin-top:14px">Ek hizmetler</p>' + rows(extra) : "") +
       '<p class="pnote">m² fiyatlı halılarda tutar, halı ölçüldükten sonra kesinleşir' + (info.bolge ? '; fiyat adresinize göre değişebilir' : '') + '.</p>';
@@ -1041,6 +1107,13 @@
       }
       if (info.firma_adi) document.getElementById("brand").textContent = info.firma_adi;
       showLogo(info.firma_logo, info.firma_adi);
+      quick.tel = String(info.firma_tel || "").replace(/[^\d+]/g, "");
+      quick.firma = info.firma_adi || "";
+      quick.kod = siteCode;
+      quick.form = true;
+      renderQuick();
+      pageReady = true;
+      renderInstall();
       renderPrices(info);
       // Siparişlerim (v11): bu telefonun bildiği siparişlerden biri bu firmanınsa müşterinin siparişleri
       loadMine(knownOrders(), siteCode, null, "Siparişlerim");
@@ -1053,18 +1126,241 @@
       card.innerHTML = '<div class="state"><b>Bağlantı hatası</b>İnternetinizi kontrol edip tekrar deneyin.</div>';
     });
   }
-  // Takip sayfasından firmanın sitesine (fiyatlar, yeni sipariş) — firmanın kodu varsa ve firma siteyi açtıysa.
-  // Fiyat listesi kapalıysa (r.fiyat yok) bağlantı "Fiyatlarımız" demez.
+  // Takip sayfasından firmanın sitesine — firmanın kodu varsa ve firma siteyi açtıysa. v13: en alttaki "Fiyatlarımız ·
+  // yeni sipariş" bağlantısı yerine üstteki "Sipariş ver" o formu açar, fiyat listesi (açıksa) burada kısa gösterilir.
   function loadSiteLink() {
     rpc("site_link", { p_order: orderId }).then(function (r) {
       if (!r || !r.kod) return;
-      var box = document.getElementById("sitelinkcard");
-      box.innerHTML = '<a class="sitelink" href="./siparis.html?s=' + encodeURIComponent(r.kod) + '"><div><b>' +
-        (r.fiyat ? 'Fiyatlarımız · yeni sipariş' : 'Yeni sipariş') + '</b>' +
-        '<span>' + (r.fiyat ? 'Fiyatları görün, yeniden sipariş verin' : 'Gününüzü seçin, halılarınızı alalım') + '</span></div>' +
-        '<span class="go" aria-hidden="true">›</span></a>';
-      box.hidden = false;
+      quick.kod = String(r.kod);
+      renderQuick();
+      if (document.getElementById("sharecard").hidden === false) renderShare();
+      if (!r.fiyat) return;
+      return rpc("site_info", { p_code: quick.kod }).then(function (info) {
+        if (info && info.bulundu) renderPrices(info, true);
+      });
     }).catch(function () {});
+  }
+
+  // ── Hızlı düğmeler (v13): Sipariş ver · Ara · WhatsApp — sayfanın en üstünde ──
+  // "Sipariş ver" nereye gider: teslim edilmiş siparişte "Tekrar yıkat" kartı (form yok, müşteri tanınıyor) → firmanın
+  // sipariş formu (site açıksa) → WhatsApp (hazır mesajla). Alınacak siparişte form "zaten alınacak siparişiniz var"
+  // derdi → WhatsApp'tan "ekleme yapmak istiyorum".
+  var quick = { tel: "", status: "", firma: "", kod: "", req: false, form: false };
+  function waLink(tel, text) { return "https://wa.me/" + phoneDigits(tel) + (text ? "?text=" + encodeURIComponent(text) : ""); }
+  function orderTarget() {
+    if (quick.form) return null; // sipariş formunun kendisi (siparis.html?s=KOD): yalnız Ara · WhatsApp
+    if (quick.req) return { card: "reqcard" };
+    if (quick.status === "Teslim alınacak" && quick.tel) return { href: waLink(quick.tel, "Merhaba, alınacak siparişime ekleme yapmak istiyorum.") };
+    if (quick.kod) return { href: "./siparis.html?s=" + encodeURIComponent(quick.kod) };
+    if (quick.tel) return { href: waLink(quick.tel, "Merhaba, halı yıkama siparişi vermek istiyorum.") };
+    return null;
+  }
+  function renderQuick() {
+    var nav = document.getElementById("quick");
+    var t = orderTarget();
+    var html = t ? '<a class="qb main" id="qorder" href="' + esc(t.href || "#" + t.card) + '">' + PLUS + 'Sipariş ver</a>' : "";
+    if (quick.tel) {
+      html += '<a class="qb" href="tel:' + esc(quick.tel) + '">' + PHONE + 'Ara</a>' +
+        '<a class="qb" href="' + esc(waLink(quick.tel)) + '">WhatsApp</a>';
+    }
+    nav.innerHTML = html;
+    nav.hidden = !html;
+    var a = document.getElementById("qorder");
+    if (a && t && t.card) {
+      a.onclick = function (e) {
+        e.preventDefault();
+        var box = document.getElementById(t.card);
+        box.classList.add("hl");
+        box.scrollIntoView({ behavior: "smooth", block: "start" });
+      };
+    }
+  }
+
+  // ── Komşunuza önerin (v13, teslimden sonra): firmanın sipariş adresi paylaşılır (WhatsApp ya da telefonun paylaş
+  // menüsü). Firmanın kendi sitesinde açıldıysa (/takip/ yükleyici → window.TAKIP_SITE.home) o sitenin adresi.
+  function shareUrl() {
+    var site = typeof SITE.home === "string" ? SITE.home : "";
+    if (/^https:\/\//.test(site)) return site;
+    if (quick.kod) {
+      try { return new URL("./siparis.html?s=" + encodeURIComponent(quick.kod), window.location.href).href; } catch (e) {}
+    }
+    return "";
+  }
+  function renderShare() {
+    var box = document.getElementById("sharecard");
+    var url = shareUrl();
+    var firma = quick.firma || "Bu firmayı";
+    var tel = quick.tel ? String(quick.tel).replace(/^\+?90/, "0") : "";
+    if (!url && !tel) { box.hidden = true; return; }
+    // Firma adına ek getirilmez (her adda doğru ek kurulamaz): "Halı yıkama için tavsiye ederim: Gençoğlu Halı Yıkama."
+    var text = "Halı yıkama için tavsiye ederim: " + firma + ". " +
+      (url ? "Gününüzü seçip buradan sipariş verebilirsiniz: " + url : "Sipariş için: " + tel);
+    box.innerHTML = '<p class="loc-title">Komşunuza önerin</p>' +
+      '<p class="loc-text">Memnun kaldıysanız komşularınıza ve yakınlarınıza gönderin; onlar da gün seçip kolayca sipariş versin.</p>' +
+      '<button class="btn btn-share" id="sharebtn">' + SHARE + 'Önerin</button><div id="sharemsg"></div>';
+    box.hidden = false;
+    document.getElementById("sharebtn").onclick = function () {
+      // Telefonun paylaş menüsü (WhatsApp, SMS…); yoksa WhatsApp
+      if (navigator.share) {
+        navigator.share({ title: firma, text: text }).catch(function () {});
+        return;
+      }
+      window.location.href = "https://wa.me/?text=" + encodeURIComponent(text);
+    };
+  }
+
+  // ── Halı bakım önerileri (v13, teslimden sonra) — her firmaya uyan genel bilgiler ──
+  var TIPS = [
+    ["Poşette bekletmeyin", "Halınızı geldiği gün serin ya da poşetten çıkarıp havalandırın; kapalı poşette uzun kalan halı nem çekip kokabilir."],
+    ["Lekeyi ovmayın", "Temiz, nemli bir bezle bastırarak alın. Ovmak lekeyi yayar, tüyleri bozar."],
+    ["Haftada bir süpürün", "Liflerin arasına yerleşen toz halıyı çabuk yıpratır ve rengini soldurur."],
+    ["Yönünü çevirin", "Yılda bir iki kez halının yönünü değiştirin; güneş ve yürüme yolu tek tarafı yıpratmasın."],
+    ["Yılda bir yıkatın", "Evde küçük çocuk ya da evcil hayvan varsa altı ayda bir yıkatmanız daha sağlıklıdır."]
+  ];
+  function renderTips() {
+    var box = document.getElementById("tipcard");
+    box.innerHTML = '<p class="loc-title">Halınız uzun süre temiz kalsın</p><ol class="tips">' +
+      TIPS.map(function (t) { return '<li><b>' + esc(t[0]) + '</b>' + esc(t[1]) + '</li>'; }).join("") + '</ol>';
+    box.hidden = false;
+  }
+
+  // ── Bildirim (v13, supabase/web-bildirim.sql + sw.js): "Haber verelim mi?" ──
+  // Müşteri izin verirse bu tarayıcı siparişin MÜŞTERİSİNE bağlanır: halı hazır olunca, yola çıkınca, teslimde (ve sonraki
+  // siparişlerinde) firmanın telefonu tarayıcıya bildirim gönderir. Sunucu desteklemiyorsa (SQL yok / firma kapattı),
+  // tarayıcı desteklemiyorsa (iPhone'da ana ekrana eklenmemiş Safari, uygulama içi tarayıcı) ya da izin reddedildiyse
+  // kart çıkmaz. Soru yalnız teslim edilmemiş siparişte sorulur; açıksa her aşamada tek satır + "Kapat".
+  var PUSH_KEY = "BCkt9hx0IouIUDAtNR_3RysSwhh3wFqxFkazwsEZxEfTfzrTCFxgxy61iPpWTk46lxG42phprnTtCC5ugFQUdnA";
+  var PUSH_BOX = "halitakip-bildirim";
+  function pushCapable() {
+    return !!(window.isSecureContext && "serviceWorker" in navigator && "PushManager" in window && "Notification" in window);
+  }
+  function b64uBytes(s) {
+    var pad = "====".slice(0, (4 - (s.length % 4)) % 4);
+    var raw = atob((s + pad).replace(/-/g, "+").replace(/_/g, "/"));
+    var out = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+    return out;
+  }
+  // Servis çalışanına not: hangi siparişin bağlantısından abone olundu (tarayıcı adresi yenilerse yeniden kaydolur)
+  function pushNote(endpoint) {
+    try {
+      caches.open(PUSH_BOX).then(function (c) {
+        return endpoint ? c.put("abone", new Response(JSON.stringify({ siparis: orderId, endpoint: endpoint }))) : c.delete("abone");
+      }).catch(function () {});
+    } catch (e) {}
+  }
+  var pushDelivered = false;
+  // Servis çalışanı (sw.js) bu sayfanın yanında mı: ortak sayfada (GitHub) sayfayla birlikte yüklenir; firmanın kendi
+  // sitesinde yükleyici "push: true" der (o sitede /takip/sw.js varsa). Yoksa kart hiç çıkmaz — eksik yüklemede müşteri
+  // "Evet"e basıp hata görmesin.
+  function swHere() {
+    return /(^|\.)github\.io$/i.test(window.location.hostname) || SITE.push === true;
+  }
+  function loadPush(data) {
+    var box = document.getElementById("pushcard");
+    pushDelivered = data.durum === "Teslim edildi";
+    if (!pushCapable() || !swHere() || Notification.permission === "denied") { box.hidden = true; return; }
+    navigator.serviceWorker.getRegistration("./").then(function (reg) {
+      return reg ? reg.pushManager.getSubscription() : null;
+    }).then(function (sub) {
+      return rpc("push_state", { p_order: orderId, p_endpoint: sub ? sub.endpoint : null }).then(function (st) {
+        if (!st || !st.destek) { box.hidden = true; return; }
+        var on = !!(st.abone && sub && Notification.permission === "granted");
+        if (!on && pushDelivered) { box.hidden = true; return; }
+        renderPush(on);
+      });
+    }).catch(function () { box.hidden = true; });
+  }
+  function renderPush(on, err) {
+    var box = document.getElementById("pushcard");
+    box.classList.toggle("slim", on);
+    if (on) {
+      box.innerHTML = '<div class="pushon">' + BELL + '<div><b>Bildirimler açık</b><span>' +
+        (pushDelivered ? "Sonraki siparişlerinizde de haber vereceğiz." : "Halılarınız hazır olunca ve yola çıkınca haber vereceğiz.") +
+        '</span></div><button type="button" class="linkbtn" id="pushoff">Kapat</button></div>';
+      document.getElementById("pushoff").onclick = pushOff;
+    } else {
+      box.innerHTML = '<p class="loc-title">Haber verelim mi?</p>' +
+        '<p class="loc-text">Halılarınız hazır olunca ve yola çıkınca telefonunuza bildirim gönderelim. İstediğiniz zaman kapatabilirsiniz.</p>' +
+        '<button class="btn btn-loc" id="pushbtn">' + BELL + 'Evet, haber ver</button><div id="pushmsg">' + (err ? '<div class="err">' + esc(err) + '</div>' : '') + '</div>';
+      document.getElementById("pushbtn").onclick = pushOn;
+    }
+    box.hidden = false;
+  }
+  function pushOn() {
+    var btn = document.getElementById("pushbtn");
+    btn.disabled = true;
+    btn.textContent = "İzin bekleniyor…";
+    // İzin sorusu dokunuşun hemen ardından sorulmalı (tarayıcı kuralı): önce izin, sonra servis çalışanı
+    Promise.resolve(Notification.requestPermission()).then(function (perm) {
+      if (perm !== "granted") throw new Error(perm === "denied" ? "red" : "vazgecti");
+      btn.textContent = "Açılıyor…";
+      return navigator.serviceWorker.register("./sw.js", { scope: "./" });
+    }).then(function () {
+      return navigator.serviceWorker.ready;
+    }).then(function (reg) {
+      return reg.pushManager.getSubscription().then(function (s) {
+        return s || reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uBytes(PUSH_KEY) });
+      });
+    }).then(function (sub) {
+      var keys = (sub.toJSON() || {}).keys || {};
+      return rpc("push_subscribe", { p_order: orderId, p_endpoint: sub.endpoint, p_p256dh: keys.p256dh || null, p_auth: keys.auth || null }).then(function (r) {
+        if (!r || !r.ok) throw new Error("kayit");
+        pushNote(sub.endpoint);
+        renderPush(true);
+      });
+    }).catch(function (e) {
+      var why = e && e.message;
+      if (why === "red") { document.getElementById("pushcard").hidden = true; return; }
+      renderPush(false, why === "vazgecti" ? "" : "Bildirimler açılamadı. Lütfen biraz sonra yeniden deneyin.");
+    });
+  }
+  function pushOff() {
+    navigator.serviceWorker.getRegistration("./").then(function (reg) {
+      return reg ? reg.pushManager.getSubscription() : null;
+    }).then(function (sub) {
+      if (!sub) return null;
+      var ep = sub.endpoint;
+      return sub.unsubscribe().then(function () { return rpc("push_unsubscribe", { p_endpoint: ep }); });
+    }).then(function () {
+      pushNote(null);
+      if (pushDelivered) document.getElementById("pushcard").hidden = true;
+      else renderPush(false);
+    }).catch(function () {
+      renderPush(false, "Kapatılamadı. Lütfen yeniden deneyin.");
+    });
+  }
+
+  // ── Ana ekrana ekle (v13): firmanın kendi sitesinde (bildirge varsa) Chrome izin verince — siparişler, fiyatlar ve yeni
+  // sipariş telefonda uygulama gibi tek dokunuşta. Tarayıcının kendi alt şeridi yerine kart (yerinde, sayfa okunduktan sonra).
+  var installEvt = null;
+  var pageReady = false;
+  if (typeof window.addEventListener === "function") {
+    window.addEventListener("beforeinstallprompt", function (e) {
+      e.preventDefault();
+      installEvt = e;
+      renderInstall();
+    });
+    window.addEventListener("appinstalled", function () {
+      installEvt = null;
+      document.getElementById("installcard").hidden = true;
+    });
+  }
+  function renderInstall() {
+    var box = document.getElementById("installcard");
+    if (!installEvt || !pageReady) { box.hidden = true; return; }
+    var name = quick.firma || "Firmamızı";
+    box.innerHTML = '<p class="loc-title">Ana ekranınıza ekleyin</p>' +
+      '<p class="loc-text">' + esc(name) + ' telefonunuzda uygulama gibi dursun: siparişleriniz, fiyatlar ve yeni sipariş tek dokunuşta.</p>' +
+      '<button class="btn btn-call" id="installbtn">' + HOME + 'Ana ekrana ekle</button>';
+    box.hidden = false;
+    document.getElementById("installbtn").onclick = function () {
+      var ev = installEvt;
+      if (!ev) return;
+      installEvt = null;
+      ev.prompt();
+      Promise.resolve(ev.userChoice).then(function () { box.hidden = true; }).catch(function () { box.hidden = true; });
+    };
   }
 
   // Silinen / iptal edilen sipariş (order_gone, v10): hata ya da "bekleniyor" yerine kısa not + firmanın sipariş formu
@@ -1116,7 +1412,16 @@
       });
   }
 
+  // Ana ekrandaki simgeden açılış (bildirgedeki start_url ?app=1): bu telefonun en son sipariş bağlantısı; hiç yoksa
+  // firmanın sipariş formu (yükleyicinin verdiği kod)
+  var appMode = new URLSearchParams(window.location.search).get("app") === "1";
   if (siteCode && !orderId) loadSite();
+  else if (!orderId && appMode && knownOrders().length) window.location.replace("./?id=" + encodeURIComponent(knownOrders()[0]) + "&app=1");
+  else if (!orderId && appMode && typeof SITE.kod === "string" && /^[A-Za-z0-9]{4,12}$/.test(SITE.kod)) {
+    siteCode = SITE.kod.toUpperCase();
+    SITE_KEY = "halitakip.site." + siteCode;
+    loadSite();
+  }
   else if (!orderId) render(null);
   else load(0);
 </script>
