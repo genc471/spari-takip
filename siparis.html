@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="robots" content="noindex" />
-<!-- v13 (2026-11-15): sayfa yalnız takip değil, işe yarar — üstte hızlı düğmeler (Sipariş ver · Ara · WhatsApp; "Sipariş ver" duruma göre "Tekrar yıkat" kartına, firmanın sipariş formuna ya da WhatsApp'a gider), takip sayfasında fiyat listesi (ilk kalemler + "Tüm fiyatlar"), teslimden sonra "Komşunuza önerin" (paylaş) ve halı bakım önerileri. Kullanıcı: "sipariş ver kısmı altta kalıyor, fark edilmiyor; üst satırlara". v12 (2026-11-14): firmalar karışmaz — müşterinin ad / telefon / adres / konumu bu telefonda FİRMA KODUNA GÖRE ayrı hatırlanır (v11'in ortak kaydı silinir); "Siparişlerim" başka firmanın siparişleri araya girse de 10 kimliğe kadar dener. Sayfa firmaların kendi alan adından da açılabilir (/takip/ yükleyici, store/tracking siteBase). v11 (2026-11-13): "Siparişlerim" — müşteri elindeki herhangi bir sipariş bağlantısından / siteden önceki siparişlerini görür (customer_orders; tutar, adres, telefon yok); ad, telefon, adres ve konum bu telefonda bütün firma siteleri için ortak hatırlanır ("Unut" ile silinir). v10 (2026-11-13): silinen / iptal edilen siparişin bağlantısı hata ya da "bekleniyor" demez → "Bu sipariş kapatıldı" + firmanın sipariş formu (order_gone). v9 (2026-11-13): firma sitesi — siparis.html?s=KOD ile müşteri (yeni ya da eski) kendi siparişini verir, fiyatları görür; takip sayfasından siteye bağlantı. Aynı sayfa üç dosya olarak yayınlanır (index / tesekkur / siparis — yalnız önizleme başlığı ve kapağı farklı; scripts/make-tracking-bundle.cjs). v8: "Tekrar yıkat" kartı. v7: müşteri yanıtı kartı + "Google'da yorum yaz" + havale/EFT hesabı. Uygulama bu işaretlerle sayfanın neyi desteklediğini anlar (store/order-replies, store/order-requests) -->
+<!-- v14 (2026-11-15): link = kimlik — müşteri bağlantısından hiçbir şey yazmadan sipariş verir: "Sipariş ver" her aşamadaki siparişte gün seçtirir (bekleyen alımı varsa WhatsApp'tan ekleme), talep uygulamada kendiliğinden siparişe döner (talep.oto); sipariş formu (siparis.html?s=KOD) bu telefonun daha önce açtığı bağlantılardan müşteriyi tanır ("Hoş geldiniz", site_known) — ad / telefon / adres sayfaya hiç gelmez. Kullanıcı: "müşteriye link gidiyor, tıkladığında bilgileri kayıtlı olsun; link üzerinden girmeyenler bilgi girsin". v13 (2026-11-15): sayfa yalnız takip değil, işe yarar — üstte hızlı düğmeler (Sipariş ver · Ara · WhatsApp; "Sipariş ver" duruma göre "Tekrar yıkat" kartına, firmanın sipariş formuna ya da WhatsApp'a gider), takip sayfasında fiyat listesi (ilk kalemler + "Tüm fiyatlar"), teslimden sonra "Komşunuza önerin" (paylaş) ve halı bakım önerileri. Kullanıcı: "sipariş ver kısmı altta kalıyor, fark edilmiyor; üst satırlara". v12 (2026-11-14): firmalar karışmaz — müşterinin ad / telefon / adres / konumu bu telefonda FİRMA KODUNA GÖRE ayrı hatırlanır (v11'in ortak kaydı silinir); "Siparişlerim" başka firmanın siparişleri araya girse de 10 kimliğe kadar dener. Sayfa firmaların kendi alan adından da açılabilir (/takip/ yükleyici, store/tracking siteBase). v11 (2026-11-13): "Siparişlerim" — müşteri elindeki herhangi bir sipariş bağlantısından / siteden önceki siparişlerini görür (customer_orders; tutar, adres, telefon yok); ad, telefon, adres ve konum bu telefonda bütün firma siteleri için ortak hatırlanır ("Unut" ile silinir). v10 (2026-11-13): silinen / iptal edilen siparişin bağlantısı hata ya da "bekleniyor" demez → "Bu sipariş kapatıldı" + firmanın sipariş formu (order_gone). v9 (2026-11-13): firma sitesi — siparis.html?s=KOD ile müşteri (yeni ya da eski) kendi siparişini verir, fiyatları görür; takip sayfasından siteye bağlantı. Aynı sayfa üç dosya olarak yayınlanır (index / tesekkur / siparis — yalnız önizleme başlığı ve kapağı farklı; scripts/make-tracking-bundle.cjs). v8: "Tekrar yıkat" kartı. v7: müşteri yanıtı kartı + "Google'da yorum yaz" + havale/EFT hesabı. Uygulama bu işaretlerle sayfanın neyi desteklediğini anlar (store/order-replies, store/order-requests) -->
 <meta name="takip-yanit" content="1" />
 <meta name="takip-talep" content="1" />
 <meta name="site-siparis" content="1" />
@@ -438,8 +438,8 @@
     if (!delivered) { if (wantsLocation || data.durum === "Teslim alınacak") renderLocation(wantsLocation); }
     // Puan: teslim edilen siparişte (verilmişse teşekkür + yıldızlar; teslim mesajından gelindiyse vurgulu)
     else renderRating(data.puan, data.yorum, wantsRating);
-    // Linkten sipariş: yalnız teslim edilmiş siparişte sorulur (halısı bizdeyken "tekrar yıkat" olmaz)
-    if (delivered) loadRequest(); else document.getElementById("reqcard").hidden = true;
+    // Linkten sipariş (v14: her aşamada; teslim edilmişte kart sayfada, diğerlerinde üstteki "Sipariş ver" açar)
+    loadRequest(delivered);
     if (data.durum === "Araçta") startEta(); else stopEta();
     // Teslim edilmiş siparişte "Halınız nerede?" sorusu anlamsız (2026-11-13 kullanıcı)
     if (data.durum === "Teslim edildi") {
@@ -533,17 +533,34 @@
   // ── Linkten sipariş: "Tekrar yıkat" (v8; request_info / request_order — supabase/takip-talep.sql) ──
   // Eski müşteri telefon açmadan gün seçer; firma uygulamasına talep düşer, firma siparişe çevirir ya da arar.
   // SQL kurulmadıysa (işlev yok) ya da firma özelliği kapattıysa kart sessizce çıkmaz. Sunucu ayrıca denetler:
-  // kara liste, açık iş, geçmiş / kapalı gün. Gün listesi sunucunun bugününden kurulur (telefonun saati yanlış olabilir).
+  // kara liste, bekleyen alım, geçmiş / kapalı gün. Gün listesi sunucunun bugününden kurulur (telefonun saati yanlış olabilir).
+  // v14 (link = kimlik): her aşamadaki siparişten (bekleyen alımı yoksa). Teslim edilmişte kart sayfada durur; diğer
+  // aşamalarda yolculuk kartının önüne geçmesin diye ancak üstteki "Sipariş ver" açar. Kartında cep telefonu olan
+  // müşterinin talebi uygulamada kendiliğinden siparişe döner (talep.oto) → "Siparişiniz alındı". Sipariş formu da bu
+  // kartı "Hoş geldiniz" diye kullanır (siteStart → renderRequest ctx.known).
   var reqPlaced = false;
+  var reqOpened = false; // üstteki "Sipariş ver" kartı açtı
+  var reqState = null; // { info: request_info, delivered }
   function hideRequest() { document.getElementById("reqcard").hidden = true; }
-  function loadRequest() {
+  function loadRequest(delivered) {
     rpc("request_info", { p_order: orderId }).then(function (r) {
       if (!r || typeof r.destek !== "boolean") { hideRequest(); return; }
+      reqState = { info: r, delivered: !!delivered };
       renderRequest(r, false);
-      // Üstteki "Sipariş ver" form doldurtmadan bu karta gider (müşteri zaten tanınıyor)
-      quick.req = !!r.destek && !document.getElementById("reqcard").hidden;
+      // Üstteki "Sipariş ver" form doldurtmadan bu karta gider (müşteri zaten tanınıyor); bekleyen alımı varsa
+      // WhatsApp'tan "o güne ekleme" (ikinci alım açılmaz)
+      quick.req = !!r.destek;
+      quick.alinacak = !r.destek && r.alinacak ? String(r.alinacak).slice(0, 10) : "";
       renderQuick();
     }).catch(hideRequest);
+  }
+  function openRequest() {
+    if (!reqState) return;
+    reqOpened = true;
+    renderRequest(reqState.info, false);
+    var box = document.getElementById("reqcard");
+    box.classList.add("hl");
+    box.scrollIntoView({ behavior: "smooth", block: "start" });
   }
   function parseYmd(s) { var p = String(s).slice(0, 10).split("-"); return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2])); }
   // "Yarın, 12 Kasım Perşembe" (bugün / yarın sunucunun gününe göre)
@@ -567,41 +584,70 @@
     }
     return { base: base, list: out };
   }
-  function renderRequest(info, edit) {
-    var box = document.getElementById("reqcard");
+  // ctx (v14, sipariş formunda "Hoş geldiniz"): { known: true, box, id, site, extra } — yoksa takip sayfasının kartı
+  function renderRequest(info, edit, ctx) {
+    var known = !!(ctx && ctx.known);
+    var box = known ? ctx.box : document.getElementById("reqcard");
+    var oid = known ? ctx.id : orderId;
+    var delivered = known || !reqState || reqState.delivered;
+    var extra = known ? ctx.extra || "" : "";
+    var sendLabel = known ? "Sipariş ver" : "Gönder";
     var t = info.talep && typeof info.talep === "object" ? info.talep : null;
     var base = /^\d{4}-\d{2}-\d{2}$/.test(String(info.bugun || "")) ? parseYmd(info.bugun) : new Date();
     // Kart en üste (yolculuk kartının önüne): bağlantı talep içinse ya da müşterinin süren bir talebi / yeni siparişi
     // varsa — sayfayı onun için açmıştır. Yoksa form en altta, puan kartından sonra durur.
     function toTop() {
-      if (reqPlaced) return;
+      if (known || reqPlaced) return;
       reqPlaced = true;
       box.parentNode.insertBefore(box, document.getElementById("card"));
     }
+    // Formdaki "Formu doldurarak sipariş ver" (başka biri için, bilgiler değişti) → tam form
+    function bindKnown() {
+      var b = known ? document.getElementById("knownform") : null;
+      if (b) b.onclick = function () { renderSite(ctx.site, null, false); };
+    }
     if (wantsRequest) toTop();
     box.classList.remove("hl");
-    // 1) Açık talep var: alındı bilgisi (+ gün değiştirme)
+    // 1) Açık talep var: alındı bilgisi (+ gün değiştirme). oto: uygulama kendiliğinden siparişe çevirir → teyit beklenmez
     if (t && t.durum === "yeni" && !edit) {
       toTop();
       box.hidden = false;
-      box.innerHTML = '<p class="loc-title">Talebiniz alındı</p>' +
-        '<div class="ok">' + esc(dayLong(String(t.gun).slice(0, 10), base)) + ' için alım talebiniz bize ulaştı' +
-        (t.adet ? ' (' + esc(t.adet) + ' parça)' : '') + '. Teyit için size haber vereceğiz.</div>' +
-        (info.destek ? '<div class="btn-row"><button class="btn btn-call" id="reqchange">Günü değiştir</button></div>' : '');
+      box.innerHTML = '<p class="loc-title">' + (t.oto ? "Siparişiniz alındı" : "Talebiniz alındı") + '</p>' +
+        '<div class="ok">' + esc(dayLong(String(t.gun).slice(0, 10), base)) +
+        (t.oto ? ' halılarınızı almaya geleceğiz' : ' için alım talebiniz bize ulaştı') +
+        (t.adet ? ' (' + esc(t.adet) + ' parça)' : '') + '.' + (t.oto ? '' : ' Teyit için size haber vereceğiz.') + '</div>' +
+        (info.destek ? '<div class="btn-row"><button class="btn btn-call" id="reqchange">Günü değiştir</button></div>' : '') + extra;
       var ch = document.getElementById("reqchange");
-      if (ch) ch.onclick = function () { renderRequest(info, true); };
+      if (ch) ch.onclick = function () { renderRequest(info, true, ctx); };
+      bindKnown();
       return;
     }
     // 2) Talep siparişe çevrildi ve o sipariş sürüyor: yeni siparişin sayfasına götür
     if (t && t.durum === "siparis" && !info.destek) {
       toTop();
       box.hidden = false;
+      if (t.siparis) rememberOrder(String(t.siparis));
       box.innerHTML = '<p class="loc-title">Siparişiniz oluşturuldu</p>' +
-        '<div class="ok">Talebiniz siparişe dönüştü. Teşekkür ederiz!</div>' +
-        (t.siparis ? '<a class="btn btn-loc next" href="?id=' + encodeURIComponent(t.siparis) + '">Yeni siparişi takip et</a>' : '');
+        '<div class="ok">' + (t.gun ? esc(dayLong(String(t.gun).slice(0, 10), base)) + ' halılarınızı almaya geliyoruz. ' : '') + 'Teşekkür ederiz!</div>' +
+        (t.siparis ? '<a class="btn btn-loc next" href="./?id=' + encodeURIComponent(t.siparis) + '">' + (known ? "Halınızı takip edin" : "Yeni siparişi takip et") + '</a>' : '') + extra;
+      bindKnown();
       return;
     }
-    if (!info.destek) { box.hidden = true; return; }
+    if (!info.destek) {
+      // Bekleyen alımı var (ikinci alım açılmaz): formda bilgi; takip sayfasında kart gizli — üstteki "Sipariş ver"
+      // WhatsApp'tan "o güne ekleme" der
+      if (known && info.alinacak) {
+        box.hidden = false;
+        box.innerHTML = '<p class="loc-title">Hoş geldiniz</p>' +
+          '<div class="ok">' + esc(dayLong(String(info.alinacak).slice(0, 10), base)) + ' alınacak bir siparişiniz var. Eklemek istediğiniz halı varsa bize yazın.</div>' + extra;
+        bindKnown();
+        return;
+      }
+      box.hidden = true;
+      return;
+    }
+    // Teslim edilmemiş siparişin sayfasında kart ancak üstteki "Sipariş ver" ile açılır (yolculuk kartının önüne geçmesin)
+    if (!known && !delivered && !wantsRequest && !reqOpened && !edit) { box.hidden = true; return; }
     // 3) Form: gün (zorunlu) + parça ve not (isteğe bağlı)
     var editing = !!(edit && t);
     var keep = editing ? String(t.gun).slice(0, 10) : "";
@@ -613,8 +659,9 @@
     box.hidden = false;
     box.classList.toggle("hl", wantsRequest);
     box.innerHTML =
-      '<p class="loc-title">' + (editing ? "Günü değiştirin" : "Halılarınızı yine yıkayalım mı?") + '</p>' +
-      '<p class="loc-text">Gün seçin, halılarınızı adresinizden alalım. Aramanıza gerek yok.</p>' +
+      '<p class="loc-title">' + (editing ? "Günü değiştirin" : known ? "Hoş geldiniz 👋" : delivered ? "Halılarınızı yine yıkayalım mı?" : "Yeni alım") + '</p>' +
+      '<p class="loc-text">' + (known ? "Bilgileriniz kayıtlı: gün seçin, halılarınızı adresinizden alalım. Aramanıza gerek yok."
+        : "Gün seçin, halılarınızı adresinizden alalım. Aramanıza gerek yok.") + '</p>' +
       '<div class="days" id="reqdays" role="radiogroup" aria-label="Alış günü">' +
         days.map(function (x) {
           return '<button type="button" class="day" role="radio" data-d="' + x.s + '"><span class="dw">' + esc(x.w) +
@@ -624,8 +671,11 @@
       '<div class="pcs"><span class="pk">Kaç parça?<small>İsteğe bağlı</small></span>' +
         '<button type="button" id="pcminus" aria-label="Azalt">−</button><span class="pn" id="pcn" aria-live="polite"></span>' +
         '<button type="button" id="pcplus" aria-label="Artır">+</button></div>' +
-      '<textarea class="rnote" id="reqnote" maxlength="300" placeholder="Notunuz (isteğe bağlı): uygun saat, kat, zil…">' + esc(editing ? t.not || "" : "") + '</textarea>' +
-      '<button class="btn btn-loc" id="reqbtn"></button><div id="reqmsg"></div>';
+      '<textarea class="rnote" id="reqnote" maxlength="300" placeholder="' +
+        (known ? "Notunuz (isteğe bağlı): uygun saat, zil; adresiniz değiştiyse yeni adres" : "Notunuz (isteğe bağlı): uygun saat, kat, zil…") + '">' +
+        esc(editing ? t.not || "" : "") + '</textarea>' +
+      '<button class="btn btn-loc" id="reqbtn"></button><div id="reqmsg"></div>' + extra;
+    bindKnown();
     var chips = box.querySelectorAll("#reqdays .day");
     function paint() {
       Array.prototype.forEach.call(chips, function (b) {
@@ -638,7 +688,7 @@
       pn.classList.toggle("none", pcs <= 0);
       var btn = document.getElementById("reqbtn");
       btn.disabled = !pick;
-      btn.textContent = pick ? "Gönder" : "Önce gün seçin";
+      btn.textContent = pick ? sendLabel : "Önce gün seçin";
     }
     Array.prototype.forEach.call(chips, function (b) {
       b.onclick = function () { pick = b.getAttribute("data-d"); paint(); };
@@ -652,21 +702,25 @@
       var note = document.getElementById("reqnote").value.trim();
       if (!pick) return;
       btn.disabled = true; btn.textContent = "Gönderiliyor…"; msg.innerHTML = "";
-      rpc("request_order", { p_order: orderId, p_day: pick, p_pieces: pcs > 0 ? pcs : null, p_note: note || null })
+      rpc("request_order", { p_order: oid, p_day: pick, p_pieces: pcs > 0 ? pcs : null, p_note: note || null })
         .then(function (r) {
           if (r && r.ok) {
-            info.talep = { gun: pick, adet: pcs > 0 ? pcs : null, not: note || null, durum: "yeni", siparis: null };
-            renderRequest(info, false);
+            // talep kimliği döndüyse site talebi: uygulama kendiliğinden siparişe çevirir (v14)
+            info.talep = { gun: pick, adet: pcs > 0 ? pcs : null, not: note || null, durum: "yeni", siparis: null, oto: !!r.talep };
+            renderRequest(info, false, ctx);
             return;
           }
-          btn.disabled = false; btn.textContent = "Gönder";
+          btn.disabled = false; btn.textContent = sendLabel;
           var why = r && r.hata;
           msg.innerHTML = '<div class="err">' + (why === "kapali_gun" ? "Seçtiğiniz gün kapalıyız. Lütfen başka bir gün seçin."
             : why === "gun" ? "Bu gün seçilemiyor. Lütfen başka bir gün seçin."
+            : why === "acik" ? (r.gun ? esc(fmtDate(r.gun)) + " alınacak bir siparişiniz zaten var." : "Alınacak bir siparişiniz zaten var.") + " Eklemek için bize yazın."
+            : why === "isleniyor" ? "Siparişiniz şu an hazırlanıyor. Değişiklik için bizi arayın."
+            : why === "tekrar" ? "Siparişiniz zaten gönderildi. Sayfayı yenileyip kontrol edin."
             : "Talebiniz kaydedilemedi. Lütfen firmayı arayın.") + '</div>';
         })
         .catch(function () {
-          btn.disabled = false; btn.textContent = "Gönder";
+          btn.disabled = false; btn.textContent = sendLabel;
           msg.innerHTML = '<div class="err">Bağlantı hatası, tekrar deneyin.</div>';
         });
     };
@@ -1095,6 +1149,22 @@
       });
     };
   }
+  // v14 "Hoş geldiniz" (link = kimlik): bu telefon bu firmanın bir sipariş bağlantısını daha önce açtıysa (takip
+  // linki, WhatsApp) form doldurtulmaz — gün seçilir, talep o bağlantıyla verilir (request_order; ad / telefon / adres
+  // firmanın kayıtlarından, sayfaya hiç gelmez). site_known yalnız bu kodun firmasının (markasının) kimliğini döndürür.
+  // Tanınmazsa ya da bir şey ters giderse her zamanki form.
+  function siteStart(info) {
+    var ids = knownOrders();
+    if (!info.acik || !ids.length) { renderSite(info, null, false); return; }
+    rpc("site_known", { p_code: siteCode, p_orders: ids.slice(0, 10) }).then(function (k) {
+      if (!k || !k.siparis) { renderSite(info, null, false); return; }
+      return rpc("request_info", { p_order: k.siparis }).then(function (ri) {
+        if (!ri || typeof ri.destek !== "boolean") { renderSite(info, null, false); return; }
+        var extra = '<div class="btn-row"><button class="btn btn-call" id="knownform">Formu doldurarak sipariş ver</button>' + siteCall(info) + '</div>';
+        renderRequest(ri, false, { known: true, box: document.getElementById("card"), id: String(k.siparis), site: info, extra: extra });
+      });
+    }).catch(function () { renderSite(info, null, false); });
+  }
   function loadSite() {
     var card = document.getElementById("card");
     document.getElementById("htitle").textContent = "Halı yıkama siparişi";
@@ -1118,10 +1188,11 @@
       // Siparişlerim (v11): bu telefonun bildiği siparişlerden biri bu firmanınsa müşterinin siparişleri
       loadMine(knownOrders(), siteCode, null, "Siparişlerim");
       var t = siteSaved().talep;
-      if (!t) { renderSite(info, null, false); return; }
+      if (!t) { siteStart(info); return; }
       rpc("site_request", { p_id: t }).then(function (r) {
-        renderSite(info, r && r.bulundu && r.durum !== "red" ? r : null, false);
-      }).catch(function () { renderSite(info, null, false); });
+        if (r && r.bulundu && r.durum !== "red" && r.durum !== "silindi") renderSite(info, r, false);
+        else siteStart(info);
+      }).catch(function () { siteStart(info); });
     }).catch(function () {
       card.innerHTML = '<div class="state"><b>Bağlantı hatası</b>İnternetinizi kontrol edip tekrar deneyin.</div>';
     });
@@ -1145,11 +1216,13 @@
   // "Sipariş ver" nereye gider: teslim edilmiş siparişte "Tekrar yıkat" kartı (form yok, müşteri tanınıyor) → firmanın
   // sipariş formu (site açıksa) → WhatsApp (hazır mesajla). Alınacak siparişte form "zaten alınacak siparişiniz var"
   // derdi → WhatsApp'tan "ekleme yapmak istiyorum".
-  var quick = { tel: "", status: "", firma: "", kod: "", req: false, form: false };
+  var quick = { tel: "", status: "", firma: "", kod: "", req: false, form: false, alinacak: "" };
   function waLink(tel, text) { return "https://wa.me/" + phoneDigits(tel) + (text ? "?text=" + encodeURIComponent(text) : ""); }
   function orderTarget() {
     if (quick.form) return null; // sipariş formunun kendisi (siparis.html?s=KOD): yalnız Ara · WhatsApp
     if (quick.req) return { card: "reqcard" };
+    // v14: bekleyen alımı var (bu ya da başka siparişi) → ikinci alım açılmaz, o güne ekleme yazılır
+    if (quick.alinacak && quick.tel) return { href: waLink(quick.tel, "Merhaba, " + fmtDate(quick.alinacak) + " alınacak siparişime ekleme yapmak istiyorum.") };
     if (quick.status === "Teslim alınacak" && quick.tel) return { href: waLink(quick.tel, "Merhaba, alınacak siparişime ekleme yapmak istiyorum.") };
     if (quick.kod) return { href: "./siparis.html?s=" + encodeURIComponent(quick.kod) };
     if (quick.tel) return { href: waLink(quick.tel, "Merhaba, halı yıkama siparişi vermek istiyorum.") };
@@ -1167,11 +1240,10 @@
     nav.hidden = !html;
     var a = document.getElementById("qorder");
     if (a && t && t.card) {
+      // v14: teslim edilmemiş siparişte kart gizli durur — düğme açar, vurgular, oraya kaydırır
       a.onclick = function (e) {
         e.preventDefault();
-        var box = document.getElementById(t.card);
-        box.classList.add("hl");
-        box.scrollIntoView({ behavior: "smooth", block: "start" });
+        openRequest();
       };
     }
   }
